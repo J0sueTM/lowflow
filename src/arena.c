@@ -89,7 +89,7 @@ void *arena_malloc(Arena *arena, size_t size) {
   new_region->next = arena->top;
   arena->top = new_region;
 
-  new_region->data = (void *)malloc(arena->region_cap);
+  new_region->data = (void *)calloc(sizeof(char), arena->region_cap);
   assert(new_region->data && "failed to alloc new region's data");
 
   return new_region->data;
