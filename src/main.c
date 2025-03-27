@@ -4,6 +4,7 @@
 
 #include "./types.h"
 #include "./arena.h"
+#include "./superhash.h"
 
 int main(void) {
   Arena *arena = arena_alloc(0);
@@ -82,6 +83,14 @@ int main(void) {
   */
 
   arena_free(arena);
+
+  char *hello = "hello";
+  char *bye = "bye";
+  printf(
+    "hello = %lu, bye = %lu\n",
+    superhash(hello, strlen(hello)),
+    superhash(bye, strlen(bye))
+  );
  
   return 0;
 }

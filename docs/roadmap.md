@@ -4,8 +4,8 @@
 
 - [x] Type system
 - [x] Arena
-- [ ] Test arena
+- [x] SuperHash algorithm
 - [ ] Hashdict
-- [ ] Test hashdict
+- [ ] Test arena & hash dict
 - [ ] ID table
 - [ ] Evaluation
