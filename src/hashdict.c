@@ -20,13 +20,16 @@ HashDict *hashdict_alloc(
     : head_entry_cap;
 
   // calloc already sets nexts to NULL, hopefully.
-  hd->heads = arena_malloc(sizeof(HashDictEntry) * head_entry_cap);
+  hd->heads = arena_malloc(
+    hd->entries_arena,
+    sizeof(HashDictEntry) * head_entry_cap
+  );
 
   return hd;
 }
 
 void hashdict_dealloc(HashDict *hd) {
-  arena_dealloc(hd->arena);
+  arena_free(hd->entries_arena);
   free(hd);
 }
 
@@ -38,16 +41,19 @@ HashDictEntry *hashdict_add_entry(
   size_t val_size
 ) {
   assert(hd);
-  assert(data);
-  assert(size >= 1);
+  assert(key);
+  assert(val);
+  assert(key_size >= 1);
+  assert(val_size >= 1);
 
-  uint64_t hashed_idx = superhash(key, (int)size) % hd->head_entry_cap;
-  HashDictEntry *head = (hd->heads + hashed_idx)
-  // Heads are already allocated, data and key are our signals that it
+  uint64_t key_hash = superhash(key, (int)key_size);
+  uint64_t hashed_idx = key_hash % hd->head_entry_cap;
+  HashDictEntry *head = (hd->heads + hashed_idx);
+  // Heads are already allocated, key and val are our signals that it
   // is empty.
-  if (!head->data && !head->key) {
+  if (!head->key && !head->val) {
     head->key = (char *)key;
-    head->data = (void *)val;
+    head->val = (void *)val;
     head->key_size = key_size;
     head->val_size = val_size;
 
@@ -65,7 +71,7 @@ HashDictEntry *hashdict_add_entry(
     sizeof(HashDictEntry)
   );
   new_entry->key = (char *)key;
-  new_entry->data = (void *)data;
+  new_entry->val = (void *)val;
   new_entry->key_size = key_size;
   new_entry->val_size = val_size;
   last_entry->next = new_entry;

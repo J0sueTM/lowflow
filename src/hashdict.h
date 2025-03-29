@@ -11,7 +11,8 @@ typedef struct HashDictEntry HashDictEntry;
 typedef struct HashDictEntry {
   char *key;
   void *val;
-  size_t size;
+  size_t key_size;
+  size_t val_size;
 
   HashDictEntry *next;
 } HashDictEntry;

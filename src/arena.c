@@ -43,8 +43,10 @@ void arena_reset(Arena *arena) {
   assert(arena);
   assert(arena->top);
 
-  region_free(arena->top->next, true);
-  memset(arena->top->data, 0b0, arena->top->used);
+  if (arena->top->next) {
+    region_free(arena->top->next, true);
+  }
+  memset(arena->top->data, 0x00, arena->top->used);
   arena->top->used = 0;
   arena->top->remainder = arena->region_cap;
   arena->top->next = NULL;
@@ -56,12 +58,15 @@ void arena_free(Arena *arena) {
 
   region_free(arena->top, true);
   free(arena);
+  arena = NULL;
 }
 
 void *arena_malloc(Arena *arena, size_t size) {
   assert(arena);
 
-  if (size > arena->region_cap) {
+  // Size + NULL terminator.
+  size_t size_term = size + 1;
+  if (size_term > arena->region_cap) {
     fprintf(
       stderr,
       "tried to alloc %ld, but arena's region cap is %ld\n",
@@ -72,10 +77,10 @@ void *arena_malloc(Arena *arena, size_t size) {
   }
 
   MemRegion *region = arena->top;
-  if (region->remainder >= size) {
-    void *ptr = (region->data + region->used + 1);
-    region->used += size;
-    region->remainder -= size;
+  if (region->remainder >= size_term) {
+    void *ptr = (region->data + size_term);
+    region->used += size_term;
+    region->remainder -= size_term;
 
     return ptr;
   }
@@ -84,8 +89,8 @@ void *arena_malloc(Arena *arena, size_t size) {
   assert(new_region && "failed to alloc new region");
 
   new_region->cap = arena->region_cap;
-  new_region->used = size;
-  new_region->remainder = arena->region_cap - size;
+  new_region->used = size_term;
+  new_region->remainder = arena->region_cap - size_term;
   new_region->next = arena->top;
   arena->top = new_region;
 
