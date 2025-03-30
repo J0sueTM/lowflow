@@ -45,7 +45,7 @@ Arena *arena_alloc(size_t region_cap) {
   arena->top = (MemRegion *)malloc(sizeof(MemRegion));
   assert(arena->top && "failed to alloc top region");
 
-  arena->top->data = (void *)calloc(sizeof(char), arena->region_cap);
+  arena->top->data = (char *)calloc(sizeof(char), arena->region_cap);
   assert(arena->top->data && "failed to calloc top region's data");
 
   arena->top->next = NULL;
@@ -111,7 +111,7 @@ void *arena_malloc(Arena *arena, size_t size) {
   new_region->next = arena->top;
   arena->top = new_region;
 
-  new_region->data = (void *)calloc(sizeof(char), arena->region_cap);
+  new_region->data = (char *)calloc(sizeof(char), arena->region_cap);
   assert(new_region->data && "failed to alloc new region's data");
 
   return new_region->data;

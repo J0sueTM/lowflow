@@ -27,7 +27,7 @@
 
 typedef struct MemRegion MemRegion;
 typedef struct MemRegion {
-  void *data;
+  char *data;
   size_t cap;
   size_t used;
   size_t remainder; // Helper.

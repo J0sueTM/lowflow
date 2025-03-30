@@ -52,8 +52,8 @@ void hashdict_dealloc(HashDict *hd) {
 
 HashDictEntry *hashdict_add_entry(
   HashDict *hd,
-  const char *key,
-  void *val,
+  char *key,
+  char *val,
   size_t key_size,
   size_t val_size
 ) {
@@ -69,8 +69,8 @@ HashDictEntry *hashdict_add_entry(
   // Heads are already allocated, key and val are our signals that it
   // is empty.
   if (!head->key && !head->val) {
-    head->key = (char *)key;
-    head->val = (void *)val;
+    head->key = key;
+    head->val = (char *)val;
     head->key_size = key_size;
     head->val_size = val_size;
 
@@ -87,8 +87,8 @@ HashDictEntry *hashdict_add_entry(
     hd->entries_arena,
     sizeof(HashDictEntry)
   );
-  new_entry->key = (char *)key;
-  new_entry->val = (void *)val;
+  new_entry->key = key;
+  new_entry->val = (char *)val;
   new_entry->key_size = key_size;
   new_entry->val_size = val_size;
   last_entry->next = new_entry;

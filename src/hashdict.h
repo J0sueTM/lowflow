@@ -27,7 +27,7 @@
 typedef struct HashDictEntry HashDictEntry;
 typedef struct HashDictEntry {
   char *key;
-  void *val;
+  char *val;
   size_t key_size;
   size_t val_size;
 
@@ -52,8 +52,8 @@ void hashdict_dealloc(HashDict *hd);
 
 HashDictEntry *hashdict_add_entry(
   HashDict *hd,
-  const char *key,
-  void *val,
+  char *key,
+  char *val,
   size_t key_size,
   size_t val_size
 );
