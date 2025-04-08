@@ -15,16 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "./arena.c"
 #include "../libs/munit/munit.h"
+#include "./arena.c"
+#include "./hashdict.c"
 
 static MunitSuite inner_suites[] = {
   arena_test_suite,
+  hashdict_test_suite,
   {0}
 };
 
 static const MunitSuite test_suite = {
-  (char *)"/arena",
+  (char *)"",
   NULL,
   inner_suites,
   1,

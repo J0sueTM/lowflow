@@ -22,13 +22,16 @@
 #include "./types.h"
 #include "./arena.h"
 #include "./superhash.h"
+#include "./hashdict.h"
 
 int main(void) {
+  HashDict *hd = hashdict_alloc(0, 0);
+  hashdict_free(hd);
+
+  /*
   Arena *arena = arena_alloc(0);
   int *val = arena_malloc(arena, sizeof(int));
   *val = 10;
-
-  //
  
   ID *person_id = (ID *)arena_malloc(arena, sizeof(ID));
   person_id->spec.type = STRUCT;
@@ -61,6 +64,7 @@ int main(void) {
     person_struct->vals[0]._int,
     person_struct->vals[1].str
   );
+  */
 
   ///////
 
@@ -97,7 +101,6 @@ int main(void) {
     // return
     add_id.minor_specs[1].type = INT
   );
-  */
 
   arena_free(arena);
 
@@ -109,5 +112,7 @@ int main(void) {
     superhash(bye, strlen(bye))
   );
  
+  */
+
   return 0;
 }

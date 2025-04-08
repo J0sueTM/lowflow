@@ -17,5 +17,8 @@ premake5 vs2022 # For Visual Studio 2022
 Build with your toolkit of choice. GMake for example:
 
 ```
-make -config=rel lowflow # The target name isn't necessary.
+make config=rel
+
+# There you go:
+./bin/lowflow/rel/lowflow
 ```

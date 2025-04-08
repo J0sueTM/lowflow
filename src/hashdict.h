@@ -34,8 +34,8 @@ typedef struct HashDictEntry {
   HashDictEntry *next;
 } HashDictEntry;
 
-#define DEFAULT_HEAD_ENTRY_CAP 128
-#define DEFAULT_ENTRY_CAP_IN_REGION 50
+#define DEFAULT_HEAD_ENTRY_CAP 64
+#define DEFAULT_ENTRY_CAP_IN_REGION 128
 typedef struct HashDict {
   HashDictEntry *heads;
   size_t head_entry_cap;
@@ -43,18 +43,17 @@ typedef struct HashDict {
   Arena *entries_arena;
 } HashDict;
 
-
 HashDict *hashdict_alloc(
   size_t head_entry_cap,
   size_t entry_cap_in_region
 );
-void hashdict_dealloc(HashDict *hd);
+void hashdict_free(HashDict *hd);
 
 HashDictEntry *hashdict_add_entry(
   HashDict *hd,
   char *key,
-  char *val,
   size_t key_size,
+  char *val,
   size_t val_size
 );
 

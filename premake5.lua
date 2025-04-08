@@ -24,10 +24,10 @@ project 'lowflow'
   links { 'munit' }
 
   filter 'configurations:dbg'
-    defines { 'LF_DBG'}
     symbols 'On'
 
   filter 'configurations:rel'
+  defines { 'NDEBUG'}
   optimize 'On'
 
 project 'lowflow-lib'
@@ -43,6 +43,10 @@ project 'munit'
   targetdir 'bin/munit/%{cfg.buildcfg}'
   files { 'libs/munit/munit.h', 'libs/munit/munit.c' }
 
+  filter 'configurations:rel'
+  defines { 'NDEBUG'}
+  optimize 'On'
+
 project 'test'
   kind 'ConsoleApp'
   language 'C'
@@ -51,4 +55,4 @@ project 'test'
   links { 'munit', 'lowflow-lib' }
 
   filter 'configurations:dbg'
-    symbols 'On'
+    symbols 'On' 

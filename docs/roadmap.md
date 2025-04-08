@@ -5,7 +5,7 @@
 - [x] Type system
 - [x] Arena
 - [x] SuperHash algorithm
-- [ ] HashDict
+- [x] HashDict
 - [x] Test arena
 - [ ] Test hashdict
 - [ ] ID table
