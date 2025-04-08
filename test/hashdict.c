@@ -25,7 +25,7 @@ static MunitResult test_hashdict_lifetime(
   (void)params;
   (void)data;
 
-  HashDict *hd = hashdict_alloc(0, 0);
+  HashDict *hd = hashdict_alloc(NULL, 0, 0);
   munit_assert_int(
     hd->entries_arena->region_cap,
     ==,
@@ -43,6 +43,33 @@ static MunitResult test_hashdict_lifetime(
   return MUNIT_OK;
 }
 
+static MunitResult test_hashdict_add_entry(
+  const MunitParameter params[],
+  void *data
+) {
+  (void)params;
+  (void)data;
+
+  HashDict *hd = hashdict_alloc(NULL, 2, 2);
+
+  // Keys were bruteforced to get the specific head index.
+  char user_age = (char)19;
+  hashdict_add_entry(hd, "age", 3, &user_age, 1);
+
+  char can_user_drive = (char)false;
+  hashdict_add_entry(hd, "can-drive?", 7, &can_user_drive, 1);
+
+  munit_assert_int(strcmp(hd->heads[0].key, "age"), ==, 0);
+  munit_assert_int((int)*hd->heads[0].val, ==, 19);
+
+  munit_assert_int(strcmp(hd->heads[1].key, "can-drive?"), ==, 0);
+  munit_assert_int((int)*hd->heads[1].val, ==, (int)false);
+
+  hashdict_free(hd);
+
+  return MUNIT_OK;
+}
+
 static MunitResult test_hashdict_add_entry_colliding(
   const MunitParameter params[],
   void *data
@@ -50,7 +77,7 @@ static MunitResult test_hashdict_add_entry_colliding(
   (void)params;
   (void)data;
 
-  HashDict *hd = hashdict_alloc(2, 2);
+  HashDict *hd = hashdict_alloc(NULL, 2, 2);
 
   char *key = "hello";
   char *val = "bye";
@@ -61,8 +88,8 @@ static MunitResult test_hashdict_add_entry_colliding(
   munit_assert_int(strcmp(head_entry->val, val), ==, 0);
 
   // Bruteforced a colliding key. Nothing special here.
-  hashdict_add_entry(hd, "hello2", 6, "bye2", 4);
-  munit_assert_int(strcmp(head_entry->next->key, "hello2"), ==, 0);
+  hashdict_add_entry(hd, "he-llo", 6, "bye2", 4);
+  munit_assert_int(strcmp(head_entry->next->key, "he-llo"), ==, 0);
   munit_assert_int(strcmp(head_entry->next->val, "bye2"), ==, 0);
 
   hashdict_free(hd);
@@ -72,8 +99,9 @@ static MunitResult test_hashdict_add_entry_colliding(
 
 static MunitTest hashdict_tests[] = {
   { (char *)"/lifetime", test_hashdict_lifetime, 0, 0, 0, 0 },
+  { (char *)"/add_entry", test_hashdict_add_entry, 0, 0, 0, 0 },
   {
-    (char *)"/add_entry/colliding",
+    (char *)"/add_colliding_entry",
     test_hashdict_add_entry_colliding,
     0, 0, 0, 0
   },

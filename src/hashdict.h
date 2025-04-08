@@ -22,7 +22,7 @@
 #include <stdlib.h>
 
 #include "./arena.h"
-#include "./superhash.h"
+#include "./murmurhash3.h"
 
 typedef struct HashDictEntry HashDictEntry;
 typedef struct HashDictEntry {
@@ -37,6 +37,8 @@ typedef struct HashDictEntry {
 #define DEFAULT_HEAD_ENTRY_CAP 64
 #define DEFAULT_ENTRY_CAP_IN_REGION 128
 typedef struct HashDict {
+  bool is_in_arena;
+
   HashDictEntry *heads;
   size_t head_entry_cap;
 
@@ -44,6 +46,7 @@ typedef struct HashDict {
 } HashDict;
 
 HashDict *hashdict_alloc(
+  Arena *arena,
   size_t head_entry_cap,
   size_t entry_cap_in_region
 );

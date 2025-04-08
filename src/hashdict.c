@@ -18,6 +18,7 @@
 #include "./hashdict.h"
 
 HashDict *hashdict_alloc(
+  Arena *arena,
   size_t head_entry_cap,
   size_t entry_cap_in_region
 ) {
@@ -34,13 +35,21 @@ HashDict *hashdict_alloc(
     (_entry_cap_in_region * entry_size) >=
     (_head_entry_cap * entry_size)
   );
-  assert(
-    _head_entry_cap % 2 == 0 &&
-    "head_entry_cap must be multiple of 2 for optimized hashing"
-  );
 
-  HashDict *hd = (HashDict *)malloc(sizeof(HashDict));
+  // TODO
+  // assert(
+  //   _head_entry_cap % 2 == 0 &&
+  //   "head_entry_cap must be multiple of 2 for optimized hashing"
+  // );
+
+  HashDict *hd;
+  if (arena) {
+    hd = arena_malloc(arena, sizeof(HashDict));
+  } else {
+    hd = (HashDict *)malloc(sizeof(HashDict));
+  }
   assert(hd && "failed to alloc hashdict");
+  hd->is_in_arena = (arena != NULL);
 
   hd->head_entry_cap = _head_entry_cap;
 
@@ -59,7 +68,9 @@ HashDict *hashdict_alloc(
 
 void hashdict_free(HashDict *hd) {
   arena_free(hd->entries_arena);
-  free(hd);
+  if (!hd->is_in_arena) {
+    free(hd);
+  }
 }
 
 HashDictEntry *hashdict_add_entry(
@@ -75,9 +86,8 @@ HashDictEntry *hashdict_add_entry(
   assert(val);
   assert(val_size >= 1);
 
-  uint64_t key_hash = superhash(key, (int)key_size);
+  uint64_t key_hash = murmurhash3(key, (int)key_size);
   uint64_t hashed_idx = key_hash % hd->head_entry_cap;
-  assert(hashed_idx <= hd->head_entry_cap);
 
   HashDictEntry *head = (hd->heads + hashed_idx);
   // Since Heads are already allocated, key and val are our signals

@@ -21,11 +21,11 @@
 
 #include "./types.h"
 #include "./arena.h"
-#include "./superhash.h"
+#include "./murmurhash3.h"
 #include "./hashdict.h"
 
 int main(void) {
-  HashDict *hd = hashdict_alloc(0, 0);
+  HashDict *hd = hashdict_alloc(NULL, 0, 0);
   hashdict_free(hd);
 
   /*
@@ -108,8 +108,8 @@ int main(void) {
   char *bye = "bye";
   printf(
     "hello = %lu, bye = %lu\n",
-    superhash(hello, strlen(hello)),
-    superhash(bye, strlen(bye))
+    murmurhash3(hello, strlen(hello)),
+    murmurhash3(bye, strlen(bye))
   );
  
   */
