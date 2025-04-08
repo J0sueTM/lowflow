@@ -34,6 +34,9 @@ static void region_free(MemRegion *top, bool should_recurse) {
   top->next = NULL;
 }
 
+
+// TODO: String manipulation.
+
 Arena *arena_alloc(size_t region_cap) {
   Arena *arena = (Arena *)malloc(sizeof(Arena));
   assert(arena && "failed to alloc arena");
@@ -45,13 +48,17 @@ Arena *arena_alloc(size_t region_cap) {
   arena->top = (MemRegion *)malloc(sizeof(MemRegion));
   assert(arena->top && "failed to alloc top region");
 
-  arena->top->data = (char *)calloc(sizeof(char), arena->region_cap);
+  arena->top->data = (char *)calloc(arena->region_cap, sizeof(char));
   assert(arena->top->data && "failed to calloc top region's data");
 
-  arena->top->next = NULL;
   arena->top->cap = arena->region_cap;
   arena->top->remainder = arena->region_cap;
+
+  // Pedantic but good documentation.
+#ifndef NDEBUG
   arena->top->used = 0;
+  arena->top->next = NULL;
+#endif
 
   return arena;
 }
@@ -81,23 +88,23 @@ void arena_free(Arena *arena) {
 void *arena_malloc(Arena *arena, size_t size) {
   assert(arena);
 
-  // Size + NULL terminator.
-  size_t size_term = size + 1;
-  if (size_term > arena->region_cap) {
-    fprintf(
-      stderr,
-      "tried to alloc %ld, but arena's region cap is %ld\n",
-      size,
-      arena->region_cap
-      );
-      return NULL;
-  }
+  // TODO: Break data bigger than region_cap into multiple regions.
+  //
+  // Optimally that wouldn't be necessary because in most cases we
+  // should know an approximately good size for our regions. But
+  // there are cases where that wouldn't be the case, primarily when
+  // we are not the ones allocating stuff, i.e. the end user of this
+  // language.
+  assert(
+    size <= arena->region_cap &&
+    "tried to malloc block bigger than region_cap"
+  );
 
   MemRegion *region = arena->top;
-  if (region->remainder >= size_term) {
-    void *ptr = (region->data + size_term);
-    region->used += size_term;
-    region->remainder -= size_term;
+  if (size <= region->remainder) {
+    void *ptr = (region->data + region->used);
+    region->used += size;
+    region->remainder -= size;
 
     return ptr;
   }
@@ -106,12 +113,12 @@ void *arena_malloc(Arena *arena, size_t size) {
   assert(new_region && "failed to alloc new region");
 
   new_region->cap = arena->region_cap;
-  new_region->used = size_term;
-  new_region->remainder = arena->region_cap - size_term;
+  new_region->used = size;
+  new_region->remainder = arena->region_cap - size;
   new_region->next = arena->top;
   arena->top = new_region;
 
-  new_region->data = (char *)calloc(sizeof(char), arena->region_cap);
+  new_region->data = (char *)calloc(arena->region_cap, sizeof(char));
   assert(new_region->data && "failed to alloc new region's data");
 
   return new_region->data;

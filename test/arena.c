@@ -41,16 +41,30 @@ static MunitResult test_arena_malloc(
   (void)params;
   (void)data;
 
-  Arena *arena = arena_alloc(6);
+  // |----------|
+  Arena *arena = arena_alloc(10);
 
+  // |*****|-----|
   arena_malloc(arena, 5);
-  munit_assert_size(arena->top->used, ==, 6);
+  munit_assert_size(arena->top->used, ==, 5);
+  munit_assert_size(arena->top->remainder, ==, 5);
+  munit_assert_char(*(arena->top->data + 5), ==, (char)0);
+
+  // |*****|***|--|
+  arena_malloc(arena, 3);
+  munit_assert_size(arena->top->used, ==, 8);
+  munit_assert_size(arena->top->remainder, ==, 2);
+  munit_assert_char(*(arena->top->data + 9), ==, (char)0);
+
+  // |**********|   -> New top region.
+  // |*****|***|--| -> Second region, used to be the top.
+  arena_malloc(arena, 10);
+  munit_assert_not_null(arena->top->next);
+  munit_assert_size(arena->top->used, ==, 10);
   munit_assert_size(arena->top->remainder, ==, 0);
 
-  arena_malloc(arena, 5);
-  munit_assert_not_null(arena->top->next);
-  munit_assert_size(arena->top->next->used, ==, 6);
-  munit_assert_size(arena->top->next->remainder, ==, 0);
+  // Make sure we skipped straight ahead to the next region.
+  munit_assert_char(*(arena->top->next->data + 9), ==, (char)0);
 
   arena_free(arena);
 
@@ -85,8 +99,7 @@ static MunitTest arena_tests[] = {
 };
 
 static const MunitSuite arena_test_suite = {
-  (char *)"",
+  (char *)"/arena",
   arena_tests,
-  NULL,
-  MUNIT_SUITE_OPTION_NONE
+  0, 0
 };
