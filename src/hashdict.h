@@ -38,6 +38,7 @@ typedef struct HashDictEntry {
 #define DEFAULT_ENTRY_CAP_IN_REGION 128
 typedef struct HashDict {
   bool is_in_arena;
+  size_t entry_count;
 
   HashDictEntry *heads;
   size_t head_entry_cap;
@@ -58,6 +59,12 @@ HashDictEntry *hashdict_add_entry(
   size_t key_size,
   char *val,
   size_t val_size
+);
+
+HashDictEntry *hashdict_get_entry(
+  HashDict *hd,
+  char *key,
+  size_t key_size
 );
 
 #endif

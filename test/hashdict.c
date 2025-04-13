@@ -97,6 +97,31 @@ static MunitResult test_hashdict_add_entry_colliding(
   return MUNIT_OK;
 }
 
+static MunitResult test_hashdict_get_entry(
+  const MunitParameter params[],
+  void *data
+) {
+  (void)params;
+  (void)data;
+
+  HashDict *hd = hashdict_alloc(NULL, 2, 2);
+
+  char int_key = (char)10;
+  char bool_val = (char)true;
+  hashdict_add_entry(hd, "hello", 5, "bye", 3);
+  hashdict_add_entry(hd, &int_key, 1, &bool_val, 1);
+
+  HashDictEntry *hello_entry = hashdict_get_entry(hd, "hello", 5);
+  munit_assert_int(strncmp(hello_entry->val, "bye", 3) , ==, 0);
+
+  HashDictEntry *int_entry = hashdict_get_entry(hd, &int_key, 1);
+  munit_assert_int(strncmp(int_entry->val, &bool_val, 1), ==, 0);
+
+  hashdict_free(hd);
+
+  return MUNIT_OK;
+}
+
 static MunitTest hashdict_tests[] = {
   { (char *)"/lifetime", test_hashdict_lifetime, 0, 0, 0, 0 },
   { (char *)"/add_entry", test_hashdict_add_entry, 0, 0, 0, 0 },
@@ -105,6 +130,7 @@ static MunitTest hashdict_tests[] = {
     test_hashdict_add_entry_colliding,
     0, 0, 0, 0
   },
+  { (char *)"/get_entry", test_hashdict_add_entry, 0, 0, 0, 0 },
   {0}
 };
 

@@ -20,53 +20,76 @@
 
 #include <stdbool.h>
 
+#include "./hashdict.h"
+
 // Null doesn't exist in LowFlow.
 typedef enum Type {
-  STR, INT, FLOAT, BOOL,
-  FUNC, KEYWORD, LIST,
-  MAP, SEQ, TYPE, STRUCT
+  // Primitives.
+  STR, INT, FLOAT, BOOL, KEYWORD,
+  // Data structures.
+  LIST, DICT, SEQ, STRUCT,
+  // Higher order.
+  FUNC, TYPE
 } Type;
 
 typedef struct ID ID;
-typedef union Value Value;
-typedef struct Dict Dict;
+
+// Primitives.
+
+// These types are for language constructs only.
+typedef char *Str;
+typedef long long Int;
+typedef double Float;
+typedef bool Bool;
+typedef char *Keyword;
+
+// Data structures.
+typedef struct List {
+  ID *id;
+  Arena *vals_arena;
+} List;
 
 typedef struct Dict {
   ID *id;
-  Value *keys;
-  Value *vals;
+  HashDict *val_by_key;
 } Dict;
-
-typedef union Spec {
-  Type type;
-  Dict named_types;
-} Spec;
-
-typedef struct List {
-  ID *id;
-  Value *vals;
-} List;
 
 typedef struct Seq {
   ID *id;
-  Value *vals;
+  Arena *vals_arena;
 } Seq;
 
 typedef struct Struct {
   ID *id;
-  Value *vals;
+  HashDict *vals_by_key;
 } Struct;
 
+typedef union Value Value;
+
+// Higher Order
+typedef struct Func {
+  ID *id;
+  Value *(*native_impl)(HashDict *arg_by_name, Value *flowing_val);
+  Value *child_func;
+} Func;
+
+typedef union Spec {
+  Type type;
+  HashDict *type_by_name;
+} Spec;
+
 typedef union Value {
-  Spec spec; // A type can also be a value.
-  char keyword[64];
-  long long _int;
-  double _float;
-  char *str;
+  Str str;
+  Int _int;
+  Float _float;
+  Bool _bool;
+  Keyword keyword;
   List *list;
-  Dict *map;
+  Dict *dict;
   Seq *seq;
   Struct *_struct;
+  Func *func;
+  Spec spec; // A type can also be a value.
 } Value;
 
 typedef struct ID {
@@ -74,7 +97,28 @@ typedef struct ID {
   bool is_anon;
   Spec *minor_specs; // {Str, Int}, {Int}, etc.
   char *name; // my-data, my-func2
-  Value value;
+  Value val;
 } ID;
+
+typedef struct Module {
+  Arena *ids_arena;
+  HashDict *id_by_name;
+
+  Arena *minor_specs_arena;
+
+  Arena *funcs_arena;
+  Arena *func_arg_type_by_name_hds_arena;
+} Module;
+
+typedef struct Flow {
+  ID *ids;
+  Value val;
+
+  Arena *flowing_vals_arena;
+} Flow;
+
+typedef struct Cluster {
+  Arena *flows_arena;
+} Cluster;
 
 #endif // LF_TYPES_H

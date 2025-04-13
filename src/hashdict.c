@@ -57,6 +57,8 @@ HashDict *hashdict_alloc(
     _entry_cap_in_region * sizeof(HashDictEntry) 
   );
 
+  hd->entry_count = 0;
+
   // Arena's calloc already sets nexts to NULL, hopefully.
   hd->heads = arena_malloc(
     hd->entries_arena,
@@ -85,6 +87,7 @@ HashDictEntry *hashdict_add_entry(
   assert(key_size >= 1);
   assert(val);
   assert(val_size >= 1);
+  assert(hd->head_entry_cap > 0);
 
   uint64_t key_hash = murmurhash3(key, (int)key_size);
   uint64_t hashed_idx = key_hash % hd->head_entry_cap;
@@ -97,6 +100,8 @@ HashDictEntry *hashdict_add_entry(
     head->val = val;
     head->key_size = key_size;
     head->val_size = val_size;
+
+    ++hd->entry_count;
 
     return head;
   }
@@ -118,5 +123,34 @@ HashDictEntry *hashdict_add_entry(
   new_entry->val_size = val_size;
   last_entry->next = new_entry;
 
+  ++hd->entry_count;
+
   return new_entry;
+}
+
+HashDictEntry *hashdict_get_entry(
+  HashDict *hd,
+  char *key,
+  size_t key_size
+) {
+  assert(hd);
+  assert(key);
+  assert(key_size >= 1);
+  assert(hd->head_entry_cap > 0);
+
+  uint64_t key_hash = murmurhash3(key, (int)key_size);
+  uint64_t hashed_idx = key_hash % hd->head_entry_cap;
+
+  HashDictEntry *cur_entry = (hd->heads + hashed_idx);
+  while (cur_entry) {
+    if (!cur_entry->key) {
+      continue;
+    } else if (strncmp(cur_entry->key, key, key_size) == 0) {
+      break;
+    }
+
+    cur_entry = cur_entry->next;
+  }
+
+  return cur_entry;
 }
