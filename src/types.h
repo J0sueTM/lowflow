@@ -1,16 +1,16 @@
 /*
  * Copyright (C) Josué Teodoro Moreira
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
@@ -23,13 +23,14 @@
 #include "./hashdict.h"
 
 // Null doesn't exist in LowFlow.
+#define TYPE_COUNT 11
 typedef enum Type {
   // Primitives.
-  STR, INT, FLOAT, BOOL, KEYWORD,
+  STR = 0, INT = 1, FLOAT = 2, BOOL = 3, KEYWORD = 4,
   // Data structures.
-  LIST, DICT, SEQ, STRUCT,
+  LIST = 5, DICT = 6, SEQ = 7, STRUCT = 8,
   // Higher order.
-  FUNC, TYPE
+  FUNC = 9, TYPE = 10
 } Type;
 
 typedef struct ID ID;
@@ -69,7 +70,8 @@ typedef union Value Value;
 // Higher Order
 typedef struct Func {
   ID *id;
-  Value *(*native_impl)(HashDict *arg_by_name, Value *flowing_val);
+  Value *(*native_impl)(HashDict *arg_by_name,
+                        Value *flowing_val);
   Value *child_func;
 } Func;
 

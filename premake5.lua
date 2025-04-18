@@ -21,21 +21,21 @@ project 'lowflow'
   language 'C'
   targetdir 'bin/lowflow/%{cfg.buildcfg}'
   files { 'src/**.h', 'src/**.c'}
-  links { 'munit' }
+  links { 'munit', 'log.c' }
 
   filter 'configurations:dbg'
     symbols 'On'
 
   filter 'configurations:rel'
-  defines { 'NDEBUG'}
-  optimize 'On'
+    defines { 'NDEBUG'}
+    optimize 'On'
 
 project 'lowflow-lib'
   kind 'StaticLib'
   language 'C'
   targetdir 'bin/lowflow-lib/%{cfg.buildcfg}'
   files { 'src/**.h', 'src/**.c' }
-  links { 'munit' }
+  links { 'munit', 'log.c' }
 
 project 'munit'
   kind 'StaticLib'
@@ -44,15 +44,35 @@ project 'munit'
   files { 'libs/munit/munit.h', 'libs/munit/munit.c' }
 
   filter 'configurations:rel'
-  defines { 'NDEBUG'}
-  optimize 'On'
+    defines { 'NDEBUG'}
+    optimize 'On'
+
+project 'log.c'
+  kind 'StaticLib'
+  language 'C'
+  targetdir 'bin/log.c/%{cfg.buildcfg}'
+  files { 'libs/log.c/src/**.h', 'libs/log.c/src/**.c' }
+  defines { 'LOG_USE_COLOR' }
+
+  filter 'configurations:rel'
+    defines { 'NDEBUG' }
+    optimize 'On'
 
 project 'test'
   kind 'ConsoleApp'
   language 'C'
   targetdir 'bin/test/%{cfg.buildcfg}'
   files { 'test/**.c' }
-  links { 'munit', 'lowflow-lib' }
+  links { 'munit', 'lowflow-lib', 'log.c' }
 
   filter 'configurations:dbg'
     symbols 'On' 
+
+-- astyle needs to be installed
+newaction {
+  trigger     = "format",
+  description = "Run AStyle on all source files",
+  execute     = function ()
+    os.execute("astyle --options=./.astylerc src/*.c src/*.h")
+  end
+}

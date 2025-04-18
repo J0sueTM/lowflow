@@ -1,3 +1,6 @@
 [submodule "libs/munit"]
 	path = libs/munit
 	url = https://github.com/nemequ/munit.git
+[submodule "libs/log.c"]
+	path = libs/log.c
+	url = git@github.com:rxi/log.c.git

@@ -1,6 +1,9 @@
 #ifndef LF_FUNC_H
 #define LF_FUNC_H
 
+#include "./types.h"
+#include "../libs/log.c/src/log.h"
+
 ID *func_id_alloc(
   Module *mod,
   char *name,
@@ -15,7 +18,7 @@ HashDictEntry *func_id_add_arg(
   ID *func_id,
   char *name,
   size_t name_size,
-  Type *type
+  Type type
 );
 
 Value *func_eval(
@@ -23,5 +26,5 @@ Value *func_eval(
   HashDict *arg_by_name,
   Value *flowing_val
 );
- 
+
 #endif // LF_FUNC_H

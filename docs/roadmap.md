@@ -7,6 +7,5 @@
 - [x] SuperHash algorithm
 - [x] HashDict
 - [x] Test arena
-- [ ] Test hashdict
-- [ ] ID table
-- [ ] Evaluation
+- [x] Test hashdict
+- [ ] Func build & eval
