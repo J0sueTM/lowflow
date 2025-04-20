@@ -25,20 +25,21 @@
 
 #include "./murmurhash3.h"
 
-uint32_t murmurhash3(const char *data, size_t size) {
+uint32_t murmurhash3(const char *data, size_t size)
+{
   uint32_t seed =
     0x9747b28c; // You can change the seed if you like
   uint32_t hash = seed;
   size_t i = 0;
 
-  while (i + 4 <= size) {
-    uint32_t k = *(uint32_t *)(data + i);
+  while(i + 4 <= size) {
+    uint32_t k = * (uint32_t *)(data + i);
     k *= 0xcc9e2d51;
-    k = (k << 15) | (k >> 17); // Rotate left by 15
+    k = (k << 15) | (k >> 17);     // Rotate left by 15
     k *= 0x1b873593;
 
     hash ^= k;
-    hash = (hash << 13) | (hash >> 19); // Rotate left by 13
+    hash = (hash << 13) | (hash >> 19);     // Rotate left by 13
     hash = hash * 5 + 0xe6546b64;
 
     i += 4;
@@ -47,9 +48,9 @@ uint32_t murmurhash3(const char *data, size_t size) {
   // Handle remaining bytes (less than 4 bytes)
   uint32_t k = 0;
   size_t remaining = size - i;
-  if (remaining) {
-    for (size_t j = 0; j < remaining; ++j) {
-      k |= (unsigned char)data[i + j] << (8 * j);
+  if(remaining) {
+    for(size_t j = 0; j < remaining; ++j) {
+      k |= (unsigned char) data[i + j] << (8 * j);
     }
     k *= 0xcc9e2d51;
     k = (k << 15) | (k >> 17);

@@ -73,6 +73,6 @@ newaction {
   trigger     = "format",
   description = "Run AStyle on all source files",
   execute     = function ()
-    os.execute("astyle --options=./.astylerc src/*.c src/*.h")
+    os.execute("astyle --options=.astylerc src/*.c src/*.h")
   end
 }

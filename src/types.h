@@ -70,9 +70,8 @@ typedef union Value Value;
 // Higher Order
 typedef struct Func {
   ID *id;
-  Value *(*native_impl)(HashDict *arg_by_name,
-                        Value *flowing_val);
-  Value *child_func;
+  Value *(*native_impl)(HashDict *arg_by_name, Value *flowing_val);
+  Value *child;
 } Func;
 
 typedef union Spec {
@@ -115,8 +114,9 @@ typedef struct Module {
 typedef struct Flow {
   ID *ids;
   Value val;
+  Arena *vals_arena;
 
-  Arena *flowing_vals_arena;
+  HashDict *arg_by_name;
 } Flow;
 
 typedef struct Cluster {

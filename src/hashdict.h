@@ -47,25 +47,16 @@ typedef struct HashDict {
   Arena *entries_arena;
 } HashDict;
 
-HashDict *hashdict_alloc(
-  Arena *arena,
-  size_t head_entry_cap,
-  size_t entry_cap_in_region
-);
+HashDict *hashdict_alloc(Arena *arena, size_t head_entry_cap,
+                         size_t entry_cap_in_region);
+
 void hashdict_free(HashDict *hd);
 
-HashDictEntry *hashdict_add_entry(
-  HashDict *hd,
-  char *key,
-  size_t key_size,
-  char *val,
-  size_t val_size
-);
+HashDictEntry *hashdict_add_entry(HashDict *hd, char *key,
+                                  size_t key_size, char *val,
+                                  size_t val_size);
 
-HashDictEntry *hashdict_get_entry(
-  HashDict *hd,
-  char *key,
-  size_t key_size
-);
+HashDictEntry *hashdict_get_entry(HashDict *hd, char *key,
+                                  size_t key_size);
 
 #endif
