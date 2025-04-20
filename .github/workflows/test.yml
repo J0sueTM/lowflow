@@ -1,0 +1,25 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest # TODO: Support windows and macos
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: install premake5
+        uses: Jarod42/install-premake5@v5
+
+      - name: configure
+        run: premake5 gmake
+
+      - name: build tests
+        run: make config=rel test
+
+      - name: run tests
+        run: ./bin/test/rel/test --show-stderr --fatal-failures
