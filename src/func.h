@@ -7,7 +7,7 @@
 ID *func_id_alloc(Module *mod, char *name, size_t name_size,
                   Value *(*native_impl)(HashDict *arg_by_name,
                                         Value *flowing_val),
-                  size_t arg_count, Type return_type);
+                  size_t arg_count, Type return_type, Type val_type);
 
 void func_id_free(ID *func_id);
 

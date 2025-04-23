@@ -25,12 +25,12 @@
 // Null doesn't exist in LowFlow.
 #define TYPE_COUNT 11
 typedef enum Type {
-  // Primitives.
-  STR = 0, INT = 1, FLOAT = 2, BOOL = 3, KEYWORD = 4,
-  // Data structures.
-  LIST = 5, DICT = 6, SEQ = 7, STRUCT = 8,
-  // Higher order.
-  FUNC = 9, TYPE = 10
+    // Primitives.
+    STR = 0, INT = 1, FLOAT = 2, BOOL = 3, KEYWORD = 4,
+    // Data structures.
+    LIST = 5, DICT = 6, SEQ = 7, STRUCT = 8,
+    // Higher order.
+    FUNC = 9, TYPE = 10
 } Type;
 
 typedef struct ID ID;
@@ -46,81 +46,92 @@ typedef char *Keyword;
 
 // Data structures.
 typedef struct List {
-  ID *id;
-  Arena *vals_arena;
+    ID *id;
+    Arena *vals_arena;
 } List;
 
 typedef struct Dict {
-  ID *id;
-  HashDict *val_by_key;
+    ID *id;
+    HashDict *val_by_key;
 } Dict;
 
 typedef struct Seq {
-  ID *id;
-  Arena *vals_arena;
+    ID *id;
+    Arena *vals_arena;
 } Seq;
 
 typedef struct Struct {
-  ID *id;
-  HashDict *vals_by_key;
+    ID *id;
+    HashDict *vals_by_key;
 } Struct;
 
 typedef union Value Value;
 
 // Higher Order
 typedef struct Func {
-  ID *id;
-  Value *(*native_impl)(HashDict *arg_by_name, Value *flowing_val);
-  Value *child;
+    ID *id;
+    Value *(*native_impl)(HashDict *arg_by_name, Value *flowing_val);
+    Value *child_val;
+    ID *child_id;
 } Func;
 
 typedef union Spec {
-  Type type;
-  HashDict *type_by_name;
+    Type type;
+    HashDict *type_by_name;
 } Spec;
 
 typedef union Value {
-  Str str;
-  Int _int;
-  Float _float;
-  Bool _bool;
-  Keyword keyword;
-  List *list;
-  Dict *dict;
-  Seq *seq;
-  Struct *_struct;
-  Func *func;
-  Spec spec; // A type can also be a value.
+    Str str;
+    Int _int;
+    Float _float;
+    Bool _bool;
+    Keyword keyword;
+    List *list;
+    Dict *dict;
+    Seq *seq;
+    Struct *_struct;
+    Func *func;
+    Spec spec; // A type can also be a value.
 } Value;
 
 typedef struct ID {
-  Spec spec; // List, Seq, Dict, Str, Int, etc.
-  bool is_anon;
-  Spec *minor_specs; // {Str, Int}, {Int}, etc.
-  char *name; // my-data, my-func2
-  Value val;
+    Spec spec; // List, Seq, Dict, Str, Int, etc.
+    bool is_anon;
+    Spec *minor_specs; // {Str, Int}, {Int}, etc.
+    char *name; // my-data, my-func2
+    Value val;
 } ID;
 
 typedef struct Module {
-  Arena *ids_arena;
-  HashDict *id_by_name;
+    Arena *ids_arena;
+    HashDict *id_by_name;
 
-  Arena *minor_specs_arena;
+    Arena *minor_specs_arena;
+    Arena *func_arg_type_by_name_minor_spec_hds_arena;
 
-  Arena *funcs_arena;
-  Arena *func_arg_type_by_name_hds_arena;
+    Arena *funcs_arena;
+    Arena *func_arg_type_by_name_hds_arena;
 } Module;
 
-typedef struct Flow {
-  ID *ids;
-  Value val;
-  Arena *vals_arena;
+typedef struct FlowFrame FlowFrame;
+typedef struct FlowFrame {
+    HashDict *arg_by_name;  // Bindings.
+    ID *parent_func_id;     // Caller.
+} FlowFrame;
 
-  HashDict *arg_by_name;
+#define FLOW_FRAME_CAP 128
+#define FLOW_ARG_BY_TYPE_ARENA_CAP 128
+#define FLOW_ARG_ENTRY_CAP 128
+typedef struct Flow {
+    Value val;
+
+    Arena *arg_by_type_hds_arena;
+    Arena *arg_entries_arena;
+    Arena *frames_arena;
 } Flow;
 
 typedef struct Cluster {
-  Arena *flows_arena;
+    Arena *flows_arena;
 } Cluster;
 
 #endif // LF_TYPES_H

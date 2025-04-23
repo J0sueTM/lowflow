@@ -29,18 +29,18 @@
 
 typedef struct MemRegion MemRegion;
 typedef struct MemRegion {
-  char *data;
-  size_t cap;
-  size_t used;
-  size_t remainder; // Helper.
-  MemRegion *next;
+    char *data;
+    size_t cap;
+    size_t used;
+    size_t remainder; // Helper.
+    MemRegion *next;
 } MemRegion;
 
 #define DEFAULT_ARENA_CAP 1024
 typedef struct Arena {
-  // Stack based linked list.
-  MemRegion *top;
-  size_t region_cap;
+    // Stack based linked list.
+    MemRegion *top;
+    size_t region_cap;
 } Arena;
 
 Arena *arena_alloc(size_t region_cap);

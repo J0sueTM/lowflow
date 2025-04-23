@@ -15,17 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "./id.h"
+#ifndef LF_FLOW_H
+#define LF_FLOW_H
 
-void id_free(ID *id)
-{
-    assert(id);
-    switch (id->spec.type) {
-    case FUNC:
-        func_id_free(id);
-        break;
-    default:
-        log_error("invalid id(%p) [type=%d]", id, (int)id->spec.type);
-        break;
-    }
-}
+#include "./types.h"
+#include "./arena.h"
+
+Flow *flow_build_tree(Arena *arena, ID *parent_id);
+
+#endif // LF_FLOW_H

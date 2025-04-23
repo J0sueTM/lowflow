@@ -25,57 +25,49 @@
 #include "./hashdict.h"
 #include "./func.h"
 #include "./id.h"
+#include "./flow.h"
 
 Value *sum_func_native_impl(HashDict *arg_by_name, Value *flowing_val)
 {
-  HashDictEntry *fst_entry = hashdict_get_entry(arg_by_name, "fst", 3);
-  HashDictEntry *snd_entry = hashdict_get_entry(arg_by_name, "snd", 3);
+    HashDictEntry *fst_entry = hashdict_get_entry(arg_by_name, "fst", 3);
+    HashDictEntry *snd_entry = hashdict_get_entry(arg_by_name, "snd", 3);
 
-  Int fst = ((Value*)fst_entry->val)->_int;
-  Int snd = ((Value*)snd_entry->val)->_int;
-  flowing_val->_int = fst + snd;
+    Int fst = ((Value*)fst_entry->val)->_int;
+    Int snd = ((Value*)snd_entry->val)->_int;
+    flowing_val->_int = fst + snd;
 
-  return flowing_val;
+    return flowing_val;
 }
 
 int main(void)
 {
-  Module math_mod = {
-    .ids_arena = arena_alloc(10 * sizeof(ID)),
-    .id_by_name = hashdict_alloc(NULL, 10, 10),
-    .funcs_arena = arena_alloc(10 * sizeof(Func)),
-    .minor_specs_arena = arena_alloc(10 * sizeof(Spec)),
-    .func_arg_type_by_name_hds_arena = arena_alloc(10 * sizeof(HashDict))
-  };
+    Module math_mod = {
+        .ids_arena = arena_alloc(10 * sizeof(ID)),
+        .id_by_name = hashdict_alloc(NULL, NULL, 10, 10),
+        .funcs_arena = arena_alloc(10 * sizeof(Func)),
+        .minor_specs_arena = arena_alloc(10 * sizeof(Spec)),
+        .func_arg_type_by_name_hds_arena = arena_alloc(10 * sizeof(HashDict))
+    };
 
-  Flow flow = {
-    .vals_arena = arena_alloc(10 * sizeof(Value)),
-    .arg_by_name = hashdict_alloc(NULL, 5, 5)
-  };
+    // + (fst Int, snd Int)
+    ID *sum_func_id = func_id_alloc(&math_mod, "+", 1,
+                                    sum_func_native_impl, 2, INT, FUNC);
+    func_id_add_arg(sum_func_id, "fst", 3, INT);
+    func_id_add_arg(sum_func_id, "snd", 3, INT);
 
-  ID *sum_func_id = func_id_alloc(&math_mod, "+", 1,
-                                  sum_func_native_impl, 2, INT);
-  func_id_add_arg(sum_func_id, "fst", 3, INT);
-  func_id_add_arg(sum_func_id, "snd", 3, INT);
+    // This will probably go into a cluster later on.
+    Arena *flows_arena = arena_alloc(1 * sizeof(Flow));
+    
+    Flow *flow = flow_build_tree(flows_arena, sum_func_id);
 
-  Value fst = { ._int = 10 };
-  Value snd = { ._int = 25 };
-  hashdict_add_entry(flow.arg_by_name, "fst", 3, (char *)&fst, sizeof(Value));
-  hashdict_add_entry(flow.arg_by_name, "snd", 3, (char *)&snd, sizeof(Value));
+    // flow_free(flow)
+    id_free(sum_func_id);
 
-  Value *res_val = id_eval(sum_func_id, &flow);
-  printf("+(10, 25) => %lld\n", res_val->_int);
+    hashdict_free(math_mod.id_by_name);
+    arena_free(math_mod.funcs_arena);
+    arena_free(math_mod.ids_arena);
+    arena_free(math_mod.minor_specs_arena);
+    arena_free(math_mod.func_arg_type_by_name_hds_arena);
 
-  id_free(sum_func_id);
-
-  hashdict_free(flow.arg_by_name);
-  arena_free(flow.vals_arena);
-  
-  hashdict_free(math_mod.id_by_name);
-  arena_free(math_mod.funcs_arena);
-  arena_free(math_mod.ids_arena);
-  arena_free(math_mod.minor_specs_arena);
-  arena_free(math_mod.func_arg_type_by_name_hds_arena);
-
-  return 0;
+    return 0;
 }

@@ -1,3 +1,6 @@
 --style=1tbs
---indent=spaces=2
+--indent=spaces=4
 --max-code-length=70
+--pad-header
+--squeeze-lines=2
+--align-pointer=name

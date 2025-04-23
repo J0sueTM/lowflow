@@ -27,27 +27,29 @@
 
 typedef struct HashDictEntry HashDictEntry;
 typedef struct HashDictEntry {
-  char *key;
-  char *val;
-  size_t key_size;
-  size_t val_size;
+    char *key;
+    char *val;
+    size_t key_size;
+    size_t val_size;
 
-  HashDictEntry *next;
+    HashDictEntry *next;
 } HashDictEntry;
 
 #define DEFAULT_HEAD_ENTRY_CAP 64
 #define DEFAULT_ENTRY_CAP_IN_REGION 128
 typedef struct HashDict {
-  bool is_in_arena;
-  size_t entry_count;
+    bool are_entries_in_outter_arena;
+    bool is_in_arena;
+    size_t entry_count;
 
-  HashDictEntry *heads;
-  size_t head_entry_cap;
+    HashDictEntry *heads;
+    size_t head_entry_cap;
 
-  Arena *entries_arena;
+    Arena *entries_arena;
 } HashDict;
 
-HashDict *hashdict_alloc(Arena *arena, size_t head_entry_cap,
+HashDict *hashdict_alloc(Arena *hds_arena, Arena *entries_arena,
+                         size_t head_entry_cap,
                          size_t entry_cap_in_region);
 
 void hashdict_free(HashDict *hd);

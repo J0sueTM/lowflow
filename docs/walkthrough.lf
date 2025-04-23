@@ -1,43 +1,33 @@
-imports :: List{Module} \>
-  [ map, list, cluster ]
+Person :: Struct = { :name Str, :age Int }
 
-Person :: Struct \>
-  { :name Str
-  , :age Int
-  }
+can-drive-msg ({ :age } Person) :: Str =
+  if( >=(age, 18)
+    , "You can drive!"
+    , "You can't drive yet"
+    )
 
-Driver :: Struct \>
-  struct/unified( { :can-drive? Bool }
-                , { Person { :can-drive? ({ :age } Person) \>
-                                           >=(age, 18) } }
-                )
+Driver :: Struct = merge(Person, { :can-drive? Bool })
 
-can-drive-msg ({ :age } Person) :: Str \>
-  ?( >=(age, 18)
-   , "You can drive!"
-   , "You can't drive yet"
-   )
+driver-names (drivers List{Driver}) :: List{Str} =
+  list/mapped(#(d Driver) => :name(d), drivers)
 
-drivers-names (drivers List{Driver}) :: List{Str} \>
-  list/mapped((d Driver) \> :name(d), drivers)
+oldest-driver (drivers List{Driver}) :: Driver =
+  list/reduced(#(fst Driver, snd Driver) => max(fst, snd, { :by :age }))
 
-oldest-driver (drivers List{Driver}) :: Driver \>
-  list/reduced((fst Driver, snd Driver) \> max(fst, snd, { :by :age }))
+drivers-by-age (drivers List{Driver}) :: Driver =
+  let({ :acc-fn #(acc Dict{Int, Driver}, d Driver) =>
+                  updated( acc
+                         , [ :age(d) ]
+                         , (drivers List{Driver}) =>
+                             list/assoced(drivers, d)
+                         )
+      }
+      , reduced(acc-fn, drivers, zero-dict(Int, Driver))
+      )
 
-drivers-by-age (drivers List{Driver}) :: Driver \>
-  list/reduced( (drivers-by-age Map{Int, Driver}, d Driver) \>
-                  map/updated( drivers-by-age
-                             , [ :age(d) ]
-                             , (drivers List{Driver}) \>
-                                 list/assoced(drivers, d)
-                             )
-              , drivers
-              , map/zero(Int, Driver)
-              )
-
-cluster1 :: Cluster \>
-  [ can-drive-msg
-  , drivers-names
-  , oldest-driver
-  , drivers-by-age
-  ]
+main :: Cluster =
+  cluster([ can-drive-msg
+          , driver-names
+          , oldest-driver
+          , drivers-by-age
+          ])
