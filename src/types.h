@@ -1,10 +1,10 @@
 /*
  * Copyright (C) Josué Teodoro Moreira
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * This program is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -12,7 +12,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see
+ * <https://www.gnu.org/licenses/>.
  */
 
 #ifndef LF_TYPES_H
@@ -24,13 +25,22 @@
 
 // Null doesn't exist in LowFlow.
 #define TYPE_COUNT 11
-typedef enum Type {
+typedef enum Type
+{
     // Primitives.
-    STR = 0, INT = 1, FLOAT = 2, BOOL = 3, KEYWORD = 4,
+    STR = 0,
+    INT = 1,
+    FLOAT = 2,
+    BOOL = 3,
+    KEYWORD = 4,
     // Data structures.
-    LIST = 5, DICT = 6, SEQ = 7, STRUCT = 8,
+    LIST = 5,
+    DICT = 6,
+    SEQ = 7,
+    STRUCT = 8,
     // Higher order.
-    FUNC = 9, TYPE = 10
+    FUNC = 9,
+    TYPE = 10
 } Type;
 
 typedef struct ID ID;
@@ -45,22 +55,26 @@ typedef bool Bool;
 typedef char *Keyword;
 
 // Data structures.
-typedef struct List {
+typedef struct List
+{
     ID *id;
     Arena *vals_arena;
 } List;
 
-typedef struct Dict {
+typedef struct Dict
+{
     ID *id;
     HashDict *val_by_key;
 } Dict;
 
-typedef struct Seq {
+typedef struct Seq
+{
     ID *id;
     Arena *vals_arena;
 } Seq;
 
-typedef struct Struct {
+typedef struct Struct
+{
     ID *id;
     HashDict *vals_by_key;
 } Struct;
@@ -68,19 +82,24 @@ typedef struct Struct {
 typedef union Value Value;
 
 // Higher Order
-typedef struct Func {
+typedef struct Func
+{
     ID *id;
-    Value *(*native_impl)(HashDict *arg_by_name, Value *flowing_val);
-    Value *child_val;
-    ID *child_id;
+    // TODO: make so functions like these who alter state,
+    // return some sort of result, showing if things went ok
+    // Also, remember that ecxeptions do not exist in LowFlow.
+    void (*native_impl)(HashDict *arg_by_name, Value *flowing_val);
+    Value *val;
 } Func;
 
-typedef union Spec {
+typedef union Spec
+{
     Type type;
     HashDict *type_by_name;
 } Spec;
 
-typedef union Value {
+typedef union Value
+{
     Str str;
     Int _int;
     Float _float;
@@ -94,15 +113,17 @@ typedef union Value {
     Spec spec; // A type can also be a value.
 } Value;
 
-typedef struct ID {
-    Spec spec; // List, Seq, Dict, Str, Int, etc.
+typedef struct ID
+{
+    Spec spec; // List, Seq, Dict, Str, Int, Func, etc.
     bool is_anon;
     Spec *minor_specs; // {Str, Int}, {Int}, etc.
-    char *name; // my-data, my-func2
+    char *name;        // my-data, my-func2
     Value val;
 } ID;
 
-typedef struct Module {
+typedef struct Module
+{
     Arena *ids_arena;
     HashDict *id_by_name;
 
@@ -114,23 +135,28 @@ typedef struct Module {
 } Module;
 
 typedef struct FlowFrame FlowFrame;
-typedef struct FlowFrame {
-    HashDict *arg_by_name;  // Bindings.
-    ID *parent_func_id;     // Caller.
+typedef struct FlowFrame
+{
+    Value val;
+    ID *func_id;
+
+    HashDict *arg_by_name;
+    HashDict *frame_by_arg_name;
+
+    FlowFrame *next;
+    FlowFrame *parent;
 } FlowFrame;
 
-#define FLOW_FRAME_CAP 128
-#define FLOW_ARG_BY_TYPE_ARENA_CAP 128
-#define FLOW_ARG_ENTRY_CAP 128
-typedef struct Flow {
+typedef struct Flow
+{
     Value val;
+    FlowFrame *top_frame;
 
-    Arena *arg_by_type_hds_arena;
-    Arena *arg_entries_arena;
     Arena *frames_arena;
 } Flow;
 
-typedef struct Cluster {
+typedef struct Cluster
+{
     Arena *flows_arena;
 } Cluster;
 

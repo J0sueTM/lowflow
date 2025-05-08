@@ -1,33 +1,38 @@
+;; This is a comment.
+
 Person :: Struct = { :name Str, :age Int }
 
-can-drive-msg ({ :age } Person) :: Str =
-  if( >=(age, 18)
-    , "You can drive!"
-    , "You can't drive yet"
-    )
+can-drive-msg (p Person) :: Str =>
+  if >=(p:age, 18)
+  then "You can drive!"
+  else "You can't drive yet."
 
-Driver :: Struct = merge(Person, { :can-drive? Bool })
+Driver :: Struct = { ..Driver, :can-drive? Bool }
 
-driver-names (drivers List{Driver}) :: List{Str} =
-  list/mapped(#(d Driver) => :name(d), drivers)
+driver-names (drivers [Driver]) :: [Str] =>
+  map( #(driver [Driver]) => driver:name, drivers )
 
-oldest-driver (drivers List{Driver}) :: Driver =
-  list/reduced(#(fst Driver, snd Driver) => max(fst, snd, { :by :age }))
+oldest-driver (drivers [Driver]) :: Driver =>
+  reduce(
+    #(_, fst Driver, snd Driver) =>
+      if >=(fst:age, snd:age) then fst else snd
+  , drivers
+  )
 
-drivers-by-age (drivers List{Driver}) :: Driver =
-  let({ :acc-fn #(acc Dict{Int, Driver}, d Driver) =>
-                  updated( acc
-                         , [ :age(d) ]
-                         , (drivers List{Driver}) =>
-                             list/assoced(drivers, d)
-                         )
-      }
-      , reduced(acc-fn, drivers, zero-dict(Int, Driver))
-      )
+drivers-by-age (drivers [Driver]) :: {Int#Driver} =>
+  reduce(
+    #(drivers-by-age {Int#Driver}, driver Driver)
+      => let
+           cur-age     driver:age,
+           cur-drivers drivers-by-age:cur-age
+           new-drivers append(cur-drivers, driver)
+         in @>(drivers-by-age, new-drivers)
+  , drivers
+  )
 
-main :: Cluster =
-  cluster([ can-drive-msg
-          , driver-names
-          , oldest-driver
-          , drivers-by-age
-          ])
+main () :: Cluster =>
+  [ can-drive-msg
+  , driver-names
+  , oldest-driver
+  , drivers-by-age
+  ]

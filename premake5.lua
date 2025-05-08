@@ -22,6 +22,7 @@ project 'lowflow'
   targetdir 'bin/lowflow/%{cfg.buildcfg}'
   files { 'src/**.h', 'src/**.c'}
   links { 'munit', 'log.c' }
+  buildoptions { "-Wall", "-Werror", "-Wpedantic" }
 
   filter 'configurations:dbg'
     symbols 'On'
@@ -40,6 +41,7 @@ project 'lowflow-lib'
 project 'munit'
   kind 'StaticLib'
   language 'C'
+  cdialect 'C11'
   targetdir 'bin/munit/%{cfg.buildcfg}'
   files { 'libs/munit/munit.h', 'libs/munit/munit.c' }
 
@@ -71,8 +73,8 @@ project 'test'
 -- astyle needs to be installed
 newaction {
   trigger     = "format",
-  description = "Run AStyle on all source files",
+  description = "Run clang-format on all source files",
   execute     = function ()
-    os.execute("astyle --options=.astylerc src/*.c src/*.h")
+    os.execute("clang-format -i src/**.h src/**.c test/**.c")
   end
 }
