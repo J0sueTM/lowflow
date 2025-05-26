@@ -106,7 +106,7 @@ arena_reset(Arena *arena)
     arena->top->remainder = arena->region_cap;
     arena->top->next = NULL;
 
-    log_debug("RESET arena(%p)", arena);
+    log_debug("reset arena(%p)", arena);
 }
 
 void

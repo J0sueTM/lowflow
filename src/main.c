@@ -25,7 +25,6 @@
 #include "./func.h"
 #include "./hashdict.h"
 #include "./id.h"
-#include "./murmurhash3.h"
 #include "./types.h"
 
 void
@@ -61,46 +60,79 @@ main(void)
     func_id_add_arg(sum_func_id, "fst", 3, INT);
     func_id_add_arg(sum_func_id, "snd", 3, INT);
 
-    Flow core_flow = { .frames_arena = arena_alloc(2 * sizeof(FlowFrame)) };
+    Flow core_flow = { .frames_arena = arena_alloc(2 * sizeof(FlowFrame)),
+                       .child_frame_values_arena =
+                         arena_alloc(20 * sizeof(Value)) };
 
-    // The following 2 frames constructs the expression:
-    // +(10, +(20, 25))
+    // The following 3 frames constructs the expression:
+    // +(+(10, 55), +(20, 25))
+
+    // +(10, 55)
+    FlowFrame *left_frame =
+      arena_malloc(core_flow.frames_arena, sizeof(FlowFrame));
+    left_frame->func_id = sum_func_id;
+    left_frame->arg_by_name = hashdict_alloc(NULL, NULL, 5, 5);
+    left_frame->frame_by_arg_name = NULL;
+
+    Value left_fst_val = { ._int = 10 };
+    Value left_snd_val = { ._int = 55 };
+    hashdict_add_entry(
+      left_frame->arg_by_name, "fst", 3, (char *)&left_fst_val, sizeof(Value));
+    hashdict_add_entry(
+      left_frame->arg_by_name, "snd", 3, (char *)&left_snd_val, sizeof(Value));
+
+    core_flow.top_frame = left_frame;
 
     // +(20, 25)
-    FlowFrame *fst_frame = arena_malloc(core_flow.frames_arena, sizeof(FlowFrame));
-    fst_frame->func_id = sum_func_id;
-    fst_frame->arg_by_name = hashdict_alloc(NULL, NULL, 5, 5);
-    fst_frame->frame_by_arg_name = NULL;
-    fst_frame->next = NULL;
+    FlowFrame *right_frame =
+      arena_malloc(core_flow.frames_arena, sizeof(FlowFrame));
+    right_frame->func_id = sum_func_id;
+    right_frame->arg_by_name = hashdict_alloc(NULL, NULL, 5, 5);
+    right_frame->frame_by_arg_name = NULL;
 
-    core_flow.top_frame = fst_frame;
+    left_frame->next = right_frame;
 
-    Value fst_val = { ._int = 20 };
-    Value snd_val = { ._int = 25 };
-    hashdict_add_entry(
-      fst_frame->arg_by_name, "fst", 3, (char *)&fst_val, sizeof(fst_val));
-    hashdict_add_entry(
-      fst_frame->arg_by_name, "snd", 3, (char *)&snd_val, sizeof(snd_val));
+    Value right_fst_val = { ._int = 20 };
+    Value right_snd_val = { ._int = 25 };
+    hashdict_add_entry(right_frame->arg_by_name,
+                       "fst",
+                       3,
+                       (char *)&right_fst_val,
+                       sizeof(Value));
+    hashdict_add_entry(right_frame->arg_by_name,
+                       "snd",
+                       3,
+                       (char *)&right_snd_val,
+                       sizeof(Value));
 
-    // +(10, fst_frame)
-    FlowFrame *snd_frame = arena_malloc(core_flow.frames_arena, sizeof(FlowFrame));
-    snd_frame->func_id = sum_func_id;
-    snd_frame->next = NULL;
-    snd_frame->arg_by_name = hashdict_alloc(NULL, NULL, 5, 5);
-    snd_frame->frame_by_arg_name = hashdict_alloc(NULL, NULL, 5, 5);
+    // +(let_frame, right_frame)
+    FlowFrame *parent_frame =
+      arena_malloc(core_flow.frames_arena, sizeof(FlowFrame));
+    parent_frame->func_id = sum_func_id;
+    parent_frame->next = NULL;
+    parent_frame->arg_by_name = hashdict_alloc(NULL, NULL, 5, 5);
+    parent_frame->frame_by_arg_name = hashdict_alloc(NULL, NULL, 5, 5);
 
-    fst_frame->parent = snd_frame;
+    right_frame->parent = parent_frame;
 
-    Value fst_val_2 = { ._int = 10 };
-    hashdict_add_entry(snd_frame->arg_by_name, "fst", 3, (char *)&fst_val_2, sizeof(fst_val_2));
+    hashdict_add_entry(parent_frame->frame_by_arg_name,
+                       "fst",
+                       3,
+                       (char *)left_frame,
+                       sizeof(FlowFrame));
+    hashdict_add_entry(parent_frame->frame_by_arg_name,
+                       "snd",
+                       3,
+                       (char *)right_frame,
+                       sizeof(FlowFrame));
 
-    // child frames
-    hashdict_add_entry(snd_frame->frame_by_arg_name, "snd", 3, (char *)fst_frame, sizeof(*fst_frame));
-   
     Value *res = flow_eval(&core_flow);
-    printf("+(10, +(20, 25)) => %lld\n", res->_int); // 55
+    printf("+(+(10, 55), +(20, 25)) => %lld\n", res->_int); // 110.
 
-    hashdict_free(fst_frame->arg_by_name);
+    hashdict_free(left_frame->arg_by_name);
+    hashdict_free(right_frame->arg_by_name);
+    hashdict_free(parent_frame->arg_by_name);
+    hashdict_free(parent_frame->frame_by_arg_name);
     flow_free(&core_flow);
     id_free(sum_func_id);
 

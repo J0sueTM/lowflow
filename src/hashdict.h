@@ -70,4 +70,7 @@ hashdict_add_entry(HashDict *hd,
 HashDictEntry *
 hashdict_get_entry(HashDict *hd, char *key, size_t key_size);
 
+void
+hashdict_debug(HashDict *hd);
+
 #endif

@@ -48,8 +48,10 @@ typedef struct Arena
 
 Arena *
 arena_alloc(size_t region_cap);
+
 void
 arena_reset(Arena *arena);
+
 void
 arena_free(Arena *arena);
 

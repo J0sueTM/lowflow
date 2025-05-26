@@ -221,3 +221,27 @@ hashdict_get_entry(HashDict *hd, char *key, size_t key_size)
 
     return (is_matching_key) ? cur_entry : NULL;
 }
+
+void
+hashdict_debug(HashDict *hd)
+{
+    assert(hd);
+
+    log_trace("dbg hd(%p)", hd);
+
+    HashDictEntry *cur_head_entry = NULL;
+    HashDictEntry *cur_entry = NULL;
+    for (size_t i = 0; i < hd->head_entry_cap; ++i) {
+        cur_head_entry = hd->heads + i;
+        if (!cur_head_entry->key) {
+            continue;
+        }
+
+        cur_entry = cur_head_entry;
+        while (cur_entry) {
+            log_debug(
+              "dbg hd %s#%p [hd=%p]", cur_entry->key, cur_entry->val, hd);
+            cur_entry = cur_entry->next;
+        }
+    }
+}

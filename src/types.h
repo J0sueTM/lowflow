@@ -141,7 +141,7 @@ typedef struct FlowFrame
     ID *func_id;
 
     HashDict *arg_by_name;
-    HashDict *frame_by_arg_name;
+    HashDict *frame_by_arg_name; // Bindings.
 
     FlowFrame *next;
     FlowFrame *parent;
@@ -150,8 +150,10 @@ typedef struct FlowFrame
 typedef struct Flow
 {
     Value val;
-    FlowFrame *top_frame;
 
+    Arena *child_frame_values_arena;
+
+    FlowFrame *top_frame;
     Arena *frames_arena;
 } Flow;
 
