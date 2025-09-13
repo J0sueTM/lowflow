@@ -1,0 +1,38 @@
+;; This is a comment.
+
+Person :: Struct = { :name Str, :age Int }
+
+can-drive-msg (p Person) :: Str =>
+  if >=(p:age, 18)
+  then "You can drive!"
+  else "You can't drive yet."
+
+Driver :: Struct = { ..Driver, :can-drive? Bool }
+
+driver-names (drivers [Driver]) :: [Str] =>
+  map( #(driver [Driver]) => driver:name, drivers )
+
+oldest-driver (drivers [Driver]) :: Driver =>
+  reduce(
+    #(_, fst Driver, snd Driver) =>
+      if >=(fst:age, snd:age) then fst else snd
+  , drivers
+  )
+
+drivers-by-age (drivers [Driver]) :: {Int#Driver} =>
+  reduce(
+    #(drivers-by-age {Int#Driver}, driver Driver)
+      => let
+           cur-age     driver:age,
+           cur-drivers drivers-by-age:cur-age
+           new-drivers append(cur-drivers, driver)
+         in @>(drivers-by-age, new-drivers)
+  , drivers
+  )
+
+main () :: Cluster =>
+  [ can-drive-msg
+  , driver-names
+  , oldest-driver
+  , drivers-by-age
+  ]
