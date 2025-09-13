@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdalign.h>
 
 #include "./types.h"
+#include "./arena.h"
 
 // TODO: return error.
 void plus_fn_native_impl(
@@ -53,7 +55,15 @@ int main(void) {
     NULL
   );
 
-  printf("%d\n", plus_res.as_int);
+  printf("res = %d\n", plus_res.as_int);
+
+  LF_Arena arena = { .block_size = 2 * sizeof(double) };
+  lf_init_arena(&arena);
+  double *d1 = (double *)lf_arena_alloc(&arena, sizeof(double), alignof(double));
+  double *d2 = (double *)lf_arena_alloc(&arena, sizeof(double), alignof(double));
+  double *d3 = (double *)lf_arena_alloc(&arena, sizeof(double), alignof(double));
+  printf("double = %f %f %f\n", *d1, *d2, *d3);
+  printf("block count = %ld\n", arena.block_count);
 
   return 0;
 }
