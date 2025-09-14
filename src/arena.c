@@ -3,12 +3,6 @@
 
 #include "./arena.h"
 
-static size_t _align_forward(size_t offset, size_t alignment) {
-    size_t misalignment = offset % alignment;
-    if (misalignment == 0) return offset;
-    return offset + (alignment - misalignment);
-}
-
 void lf_init_arena(LF_Arena *arena) {
   assert(arena);
   assert(arena->block_size >= 0);
@@ -25,14 +19,13 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size, size_t alignment) {
   assert(arena);
 
   LF_MemBlock *top_block = arena->top_block;
-  size_t aligned_offset = _align_forward(top_block->offset, alignment);
 
-  size_t new_offset_aligned = top_block->offset + aligned_offset;
-  size_t new_offset_filled = new_offset_aligned + size;
-  printf("%ld %ld %ld\n", new_offset_aligned, new_offset_filled, arena->block_size);
-  if (new_offset_filled <= arena->block_size) {
-    char *ptr = top_block->data + new_offset_aligned;
-    top_block->offset = new_offset_filled;
+  size_t misalignment = (alignment != 0) ? top_block->offset % alignment : 0;
+  size_t aligned_offset = top_block->offset + ((misalignment == 0) ? 0 : (alignment - misalignment));
+  size_t filled_offset = aligned_offset + size;
+  if (filled_offset <= arena->block_size) {
+    char *ptr = top_block->data + aligned_offset;
+    top_block->offset = filled_offset;
     return ptr;
   }
 
