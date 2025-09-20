@@ -41,3 +41,31 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size, size_t alignment) {
 
   return new_block->data;
 }
+
+// WARNING: This function assumes that every block contains the same
+// element of the same size and alignment.
+char *lf_arena_get_elem_by_pos(
+  LF_Arena *arena,
+  size_t pos,
+  size_t size,
+  size_t alignment
+) {
+  assert(arena);
+
+  size_t padding = (alignment - (size % alignment)) % alignment;
+  size_t filled_size = size + padding;
+  size_t elems_in_block = arena->block_size / filled_size;
+  size_t block_pos = pos / elems_in_block;
+  size_t elem_pos_in_block = pos % elems_in_block;
+
+  // TODO: Optimization. Start from the top or the head depending
+  // on distance.
+  LF_MemBlock *cur_block = &arena->head_block;
+  for (size_t i = 0; i < block_pos; ++i) {
+    cur_block = cur_block->next;
+  }
+  assert(cur_block);
+
+  size_t offset = elem_pos_in_block * filled_size;
+  return (cur_block->data + offset);
+}

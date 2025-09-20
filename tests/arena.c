@@ -86,6 +86,26 @@ static MunitResult test_arena_alloc_alignment(
   return MUNIT_OK;
 }
 
+static MunitResult test_arena_get_elem_by_pos(
+  const MunitParameter params[],
+  void *data
+) {
+  (void)params;
+  (void)data;
+
+  LF_Arena arena = { .block_size = 2 * sizeof(int) };
+  lf_init_arena(&arena);
+
+  lf_arena_alloc(&arena, sizeof(int), alignof(int));
+  lf_arena_alloc(&arena, sizeof(int), alignof(int));
+  int *last_elem = (int *)lf_arena_alloc(&arena, sizeof(int), alignof(int));
+  int *found_elem = (int *)lf_arena_get_elem_by_pos(&arena, 2, sizeof(int), alignof(int));
+
+  munit_assert_ptr_equal(last_elem, found_elem);
+
+  return MUNIT_OK;
+}
+
 static MunitTest arena_tests[] = {
   {
     .name = "/init",
@@ -98,6 +118,7 @@ static MunitTest arena_tests[] = {
   { "/alloc", test_arena_alloc, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { "/alloc/overflow", test_arena_alloc_overflow, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { "/alloc/alignment", test_arena_alloc_alignment, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { "/get_elem_by_pos", test_arena_get_elem_by_pos, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { 0 }
 };
 

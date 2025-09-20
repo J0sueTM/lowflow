@@ -21,5 +21,11 @@ typedef struct LF_Arena {
 
 void lf_init_arena(LF_Arena *arena);
 char *lf_arena_alloc(LF_Arena *arena, size_t size, size_t alignment);
+char *lf_arena_get_elem_by_pos(
+  LF_Arena *arena,
+  size_t pos,
+  size_t size,
+  size_t alignment
+);
 
 #endif // LF_ARENA_H
