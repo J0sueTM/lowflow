@@ -2,7 +2,6 @@
 #include <stdalign.h>
 
 #include "./types.h"
-#include "./arena.h"
 #include "./runtime.h"
 
 // TODO: return error.
@@ -62,7 +61,11 @@ int main(void) {
   printf("res = %d\n", plus_res.as_int);
 
   LF_Flow flow;
-  lf_build_flow(&flow, &parent_plus_fn_call);
+  size_t val_qtt = lf_init_flow(&flow, &parent_plus_fn_call);
+  LF_Value *fst_val = (LF_Value *)flow.vals_exec_seq.head_block.data;
+  for (size_t i = 0; i < val_qtt; ++i) {
+    printf("%p\n", (void *)(fst_val + (i * sizeof(LF_Value *))));
+  }
 
   return 0;
 }

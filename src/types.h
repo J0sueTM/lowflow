@@ -7,10 +7,22 @@
 #include <stdalign.h>
 
 typedef enum LF_Type {
-  LF_INT, LF_FLOAT, LF_CHAR, LF_STR, LF_BOOL, LF_SYMBOL,
-  LF_LIST, LF_SEQ, LF_DICT, LF_FUNC_DEF, LF_FUNC_CALL,
-  LF_TYPE, LF_TRAIT
+  LF_INT       = 1 << 0,
+  LF_FLOAT     = 1 << 1,
+  LF_CHAR      = 1 << 2,
+  LF_STR       = 1 << 3,
+  LF_BOOL      = 1 << 4,
+  LF_SYMBOL    = 1 << 5,
+  LF_LIST      = 1 << 6,
+  LF_SEQ       = 1 << 7,
+  LF_DICT      = 1 << 8,
+  LF_FUNC_DEF  = 1 << 9,
+  LF_FUNC_CALL = 1 << 10,
+  LF_TYPE      = 1 << 11,
+  LF_TRAIT     = 1 << 12
 } LF_Type;
+
+#define PRIMITIVE_MASK (LF_INT | LF_FLOAT | LF_CHAR | LF_STR | LF_BOOL | LF_FUNC_DEF | LF_TYPE | LF_TRAIT)
 
 typedef struct LF_Value LF_Value;
 

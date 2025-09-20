@@ -1,12 +1,6 @@
 #include "./runtime.h"
 
-void lf_init_flow(LF_Flow *flow) {
-  assert(flow);
-
-  flow->cur_pos = 0;
-}
-
-void lf_build_flow(LF_Flow *flow, LF_Value *entrypoint) {
+size_t lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   assert(flow);
   assert(entrypoint);
 
@@ -23,34 +17,49 @@ void lf_build_flow(LF_Flow *flow, LF_Value *entrypoint) {
   );
   *entrypoint_ptr = entrypoint;
 
-  LF_Value *cur_val = entrypoint;
+  size_t cur_val_pos = 0;
+  LF_Value *cur_val = NULL;
   bool should_stop = false;
   while (!should_stop) {
-    switch (cur_val->type) {
-    case LF_INT:
-    case LF_FLOAT:
-    case LF_CHAR:
-    case LF_STR:
-    case LF_BOOL:
-    case LF_FUNC_DEF:
-    case LF_TYPE:
-    case LF_TRAIT:
-      // assert(false && "primitive value not implemented");
-      break;
-    case LF_FUNC_CALL: {
-      size_t arg_qtt = cur_val->inner_val->func_def_spec->arg_qtt;
-      LF_Value **arg_val_ptrs = (LF_Value **)lf_arena_alloc(
-        &visited_vals, arg_qtt * sizeof(LF_Value *),
-        alignof(LF_Value *)
-      );
-      for (size_t i = 0; i < arg_qtt; ++i) {
-        arg_val_ptrs[i] = &cur_val->func_call_spec->args[i];
-      }
-      cur_val = arg_val_ptrs[arg_qtt - 1];
-    } break;
-    default:
-      assert(false && "unknown value type");
-      break;
+    cur_val = *(LF_Value **)lf_arena_get_elem_by_pos(
+      &visited_vals,
+      cur_val_pos,
+      sizeof(LF_Value *),
+      alignof(LF_Value *)
+    );
+    if (!cur_val) {
+      should_stop = true;
+      continue;
+    }
+    ++cur_val_pos;
+
+    bool is_leaf = (cur_val->type & PRIMITIVE_MASK) != 0;
+    if (is_leaf) {
+      continue;
+    }
+
+    size_t arg_qtt = cur_val->inner_val->func_def_spec->arg_qtt;
+    LF_Value **arg_val_ptrs = (LF_Value **)lf_arena_alloc(
+      &visited_vals, arg_qtt * sizeof(LF_Value *),
+      alignof(LF_Value *)
+    );
+    for (size_t i = 0; i < arg_qtt; ++i) {
+      arg_val_ptrs[i] = &cur_val->func_call_spec->args[i];
     }
   }
+
+  size_t val_qtt = cur_val_pos;
+  flow->vals_exec_seq.block_size = val_qtt * sizeof(LF_Value *);
+  lf_init_arena(&flow->vals_exec_seq);
+  for (size_t i = val_qtt; i >= 1; --i) {
+    LF_Value **val_exec_ptr = (LF_Value **)lf_arena_alloc(
+      &flow->vals_exec_seq, sizeof(LF_Value *), alignof(LF_Value *)
+    );
+    *val_exec_ptr = *(LF_Value **)lf_arena_get_elem_by_pos(
+      &visited_vals, (i - 1), sizeof(LF_Value *), alignof(LF_Value *)
+    );
+    assert(*val_exec_ptr);
+  }
+
+  return val_qtt;
 }
