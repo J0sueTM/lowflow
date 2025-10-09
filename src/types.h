@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <stdalign.h>
 
+#include "./memory/stack.h"
+
 typedef enum LF_Type {
   LF_INT       = 1 << 0,
   LF_FLOAT     = 1 << 1,
@@ -47,7 +49,7 @@ typedef struct LF_FuncDefSpec {
   size_t arg_qtt;
   LF_Type ret_type;
 
-  void (*native_impl)(LF_Value *out, LF_Value *args, LF_Value *bindings);
+  void (*native_impl)(LF_Value *out, LF_Stack *vals);
 } LF_FuncDefSpec;
 
 typedef struct LF_FuncCallSpec {

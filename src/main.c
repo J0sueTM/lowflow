@@ -3,17 +3,19 @@
 
 #include "./types.h"
 #include "./runtime.h"
+#include "./memory/stack.h"
+#include "./logger.h"
 
 // TODO: return error.
 void plus_fn_native_impl(
   LF_Value *out,
-  LF_Value *args,
-  LF_Value *bindings
+  LF_Stack *frame_vals
 ) {
-  (void)bindings;
+  LF_Value **snd_arg_val = (LF_Value **)lf_pop_from_stack(frame_vals);
+  LF_Value **fst_arg_val = (LF_Value **)lf_pop_from_stack(frame_vals);
 
-  int fst = args[0].as_int;
-  int snd = args[0].as_int;
+  int fst = (*fst_arg_val)->as_int;
+  int snd = (*snd_arg_val)->as_int;
   int res = fst + snd;
 
   out->type = LF_INT;
@@ -21,6 +23,7 @@ void plus_fn_native_impl(
 }
 
 int main(void) {
+  return 0;
   LF_Type plus_fn_arg_types[] = { LF_INT, LF_INT };
   char *plus_fn_arg_names[] = { "fst", "snd" };
 
@@ -38,8 +41,22 @@ int main(void) {
     .func_def_spec = &plus_fn_def,
   };
 
+  // LF_Value child_plus_fn_call_args[] = {
+  //   { .type = LF_INT, .as_int = 4 },
+  //   { .type = LF_INT, .as_int = 5 }
+  // };
+  // LF_FuncCallSpec child_plus_fn_call_spec = {
+  //   .args = child_plus_fn_call_args
+  // };
+  // LF_Value child_plus_fn_call = {
+  //   .type = LF_FUNC_CALL,
+  //   .func_call_spec = &child_plus_fn_call_spec,
+  //   .inner_val = &plus_fn
+  // };
+
   LF_Value parent_plus_fn_call_args[] = {
-    { .type = LF_INT, .as_int = 1 },
+    // child_plus_fn_call,
+    { .type = LF_INT, .as_int = 4 },
     { .type = LF_INT, .as_int = 2 }
   };
   LF_FuncCallSpec parent_plus_fn_call_spec = {
@@ -51,21 +68,11 @@ int main(void) {
     .inner_val = &plus_fn
   };
 
-  LF_Value plus_res;
-  parent_plus_fn_call.inner_val->func_def_spec->native_impl(
-    &plus_res,
-    parent_plus_fn_call.func_call_spec->args,
-    NULL
-  );
-
-  printf("res = %d\n", plus_res.as_int);
-
   LF_Flow flow;
-  size_t val_qtt = lf_init_flow(&flow, &parent_plus_fn_call);
-  LF_Value *fst_val = (LF_Value *)flow.vals_exec_seq.head_block.data;
-  for (size_t i = 0; i < val_qtt; ++i) {
-    printf("%p\n", (void *)(fst_val + (i * sizeof(LF_Value *))));
-  }
+  lf_init_flow(&flow, &parent_plus_fn_call);
+  lf_eval_flow(&flow);
+
+  printf("%d\n", (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int);
 
   return 0;
 }

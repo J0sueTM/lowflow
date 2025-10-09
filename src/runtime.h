@@ -2,13 +2,24 @@
 #define LF_RUNTIME_H
 
 #include "./types.h"
-#include "./arena.h"
+#include "./memory/list.h"
+#include "./memory/stack.h"
 
 typedef struct LF_Flow {
-  LF_Arena vals_exec_seq;
-  size_t cur_pos;
+  LF_List val_schedule;
+  LF_Stack frame_vals;
+  LF_Stack new_vals;
 } LF_Flow;
 
-size_t lf_init_flow(LF_Flow *flow, LF_Value *entrypoint);
+#ifndef LF_FLOW_FRAME_VAL_QTT_IN_BLOCK
+#define LF_FLOW_FRAME_VAL_QTT_IN_BLOCK 256
+#endif
+
+#ifndef LF_FLOW_NEW_VAL_QTT_IN_BLOCK
+#define LF_FLOW_NEW_VAL_QTT_IN_BLOCK 256
+#endif
+
+void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint);
+void lf_eval_flow(LF_Flow *flow);
 
 #endif // LF_RUNTIME_H
