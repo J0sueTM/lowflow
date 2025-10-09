@@ -9,6 +9,7 @@ typedef struct LF_Stack {
   size_t elem_size;
   size_t elem_alignment;
   size_t elem_padded_size;
+  size_t elem_count;
 } LF_Stack;
 
 void lf_init_stack(LF_Stack *stack);

@@ -4,7 +4,6 @@
 #include "./types.h"
 #include "./runtime.h"
 #include "./memory/stack.h"
-#include "./logger.h"
 
 // TODO: return error.
 void plus_fn_native_impl(
@@ -23,7 +22,6 @@ void plus_fn_native_impl(
 }
 
 int main(void) {
-  return 0;
   LF_Type plus_fn_arg_types[] = { LF_INT, LF_INT };
   char *plus_fn_arg_names[] = { "fst", "snd" };
 
@@ -72,7 +70,7 @@ int main(void) {
   lf_init_flow(&flow, &parent_plus_fn_call);
   lf_eval_flow(&flow);
 
-  printf("%d\n", (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int);
+  // printf("%d\n", (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int);
 
   return 0;
 }

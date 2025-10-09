@@ -4,6 +4,18 @@ void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   assert(flow);
   assert(entrypoint);
 
+  flow->logger.min_level = (
+#ifdef LF_DEBUG_CONFIG
+    LF_DEBUG
+#else
+    LF_WARNING
+#endif
+  );
+  flow->logger.time_fmt = NULL;
+  lf_init_logger(&flow->logger);
+
+  lf_log_debug(&flow->logger, "beg init flow [flow=%x]", flow);
+
 #ifndef LF_FLOW_VISITED_VAL_QTT_IN_BLOCK
 #define LF_FLOW_VISITED_VAL_QTT_IN_BLOCK 500
 #endif
@@ -75,10 +87,19 @@ void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   flow->new_vals.elem_size = sizeof(LF_Value);
   flow->new_vals.elem_alignment = alignof(LF_Value);
   lf_init_stack(&flow->new_vals);
+
+  lf_log_debug(
+    &flow->logger,
+    "end init flow [flow=%x, elem_count=%ld]",
+    flow,
+    flow->val_schedule.elem_count
+  );
 }
 
 void lf_eval_flow(LF_Flow *flow) {
   assert(flow);
+
+  lf_log_debug(&flow->logger, "beg eval flow [flow=%x]", flow);
 
   LF_Value **cur_val = (LF_Value **)lf_get_first_list_elem(&flow->val_schedule);
   while (cur_val) {
@@ -118,4 +139,6 @@ void lf_eval_flow(LF_Flow *flow) {
       (char *)cur_val
     );
   }
+
+  lf_log_debug(&flow->logger, "end eval flow [flow=%x]", flow);
 }

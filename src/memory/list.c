@@ -29,10 +29,6 @@ char *lf_alloc_list_elem(LF_List *list, size_t qtt) {
   return elem;
 }
 
-// TODO: Retain allocated blocks for faster reuse, but this can
-// lead to unbounded memory growth if a workload temporarily spikes.
-// Consider adding a configurable cap: if the arena's total capacity
-// exceeds the cap when reset, free excess blocks.
 void lf_reset_list(LF_List *list) {
   assert(list);
 

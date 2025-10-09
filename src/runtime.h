@@ -4,8 +4,10 @@
 #include "./types.h"
 #include "./memory/list.h"
 #include "./memory/stack.h"
+#include "./logger.h"
 
 typedef struct LF_Flow {
+  LF_Logger logger;
   LF_List val_schedule;
   LF_Stack frame_vals;
   LF_Stack new_vals;

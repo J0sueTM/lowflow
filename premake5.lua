@@ -9,10 +9,10 @@ project 'lowflow'
   buildoptions { "-Wall", "-Werror", "-Wpedantic" }
 
   filter 'configurations:dbg'
+    defines { 'LF_DEBUG_CONFIG' }
     symbols 'On'
 
   filter 'configurations:rel'
-    defines { 'NDEBUG' }
     optimize 'On'
 
 

@@ -44,6 +44,10 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size) {
   return new_block->data;
 }
 
+// TODO: Retain allocated blocks for faster reuse, but this can
+// lead to unbounded memory growth if a workload temporarily spikes.
+// Consider adding a configurable cap: if the arena's total capacity
+// exceeds the cap when reset, free excess blocks.
 void lf_reset_arena(LF_Arena *arena) {
   assert(arena);
 
