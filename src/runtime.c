@@ -4,13 +4,7 @@ void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   assert(flow);
   assert(entrypoint);
 
-  flow->logger.min_level = (
-#ifdef LF_DEBUG_CONFIG
-    LF_DEBUG
-#else
-    LF_WARNING
-#endif
-  );
+  flow->logger.min_level = LF_DEBUG;
   flow->logger.time_fmt = NULL;
   lf_init_logger(&flow->logger);
 
@@ -117,7 +111,12 @@ void lf_eval_flow(LF_Flow *flow) {
         LF_Value *new_res_val = (LF_Value *)lf_alloc_stack_elem(&flow->new_vals);
         LF_Value *func_def = (*cur_val)->inner_val;
         if (!func_def->func_def_spec->native_impl) {
-          assert(false && "not implemented");
+          lf_log_fatal(
+            &flow->logger,
+            "eval flow: func has no native impl [f=%x, fu=%x]",
+            flow,
+            func_def
+          );
         }
         func_def->func_def_spec->native_impl(new_res_val, &flow->frame_vals);
         lf_reset_stack(&flow->frame_vals);

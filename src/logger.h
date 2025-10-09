@@ -26,8 +26,13 @@ typedef struct LF_Logger {
   bool is_colored;
 } LF_Logger;
 
+#ifdef LF_DEBUG_CONFIG
 #define lf_log_debug(logger, ...)                           \
   lf_log(logger, LF_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
+#else
+#define lf_log_debug(...) {}
+#endif
+
 #define lf_log_info(logger, ...)                            \
   lf_log(logger, LF_INFO, __FILE__, __LINE__, __VA_ARGS__)
 #define lf_log_warning(logger, ...)                           \

@@ -58,7 +58,7 @@ int main(void) {
     { .type = LF_INT, .as_int = 2 }
   };
   LF_FuncCallSpec parent_plus_fn_call_spec = {
-    .args = parent_plus_fn_call_args
+    .args = parent_plus_fn_call_args,
   };
   LF_Value parent_plus_fn_call = {
     .type = LF_FUNC_CALL,
@@ -70,7 +70,9 @@ int main(void) {
   lf_init_flow(&flow, &parent_plus_fn_call);
   lf_eval_flow(&flow);
 
-  // printf("%d\n", (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int);
+  LF_Logger logger = { .min_level = LF_INFO };
+  int res = (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int;
+  lf_log_info(&logger, "res = %d", res);
 
   return 0;
 }

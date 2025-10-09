@@ -40,9 +40,13 @@ void lf_reset_stack(LF_Stack *stack) {
 
 char *lf_pop_from_stack(LF_Stack *stack) {
   assert(stack);
+  assert(stack->elem_count > 0);
 
   LF_Arena *arena = &stack->arena;
-  char *elem = arena->top_block->data - stack->elem_padded_size;
+  char *elem = (
+    arena->top_block->data +
+    ((stack->elem_count - 1) * stack->elem_padded_size)
+  );
   arena->top_block->offset -= stack->elem_padded_size;
   return elem;
 }

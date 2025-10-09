@@ -24,7 +24,7 @@ char *lf_alloc_list_elem(LF_List *list, size_t qtt) {
 
   size_t total_size = qtt * list->elem_size;
   char *elem = lf_arena_alloc(&list->arena, total_size);
-  ++list->elem_count;
+  list->elem_count += qtt;
 
   return elem;
 }
