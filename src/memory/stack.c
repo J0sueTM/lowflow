@@ -48,5 +48,6 @@ char *lf_pop_from_stack(LF_Stack *stack) {
     ((stack->elem_count - 1) * stack->elem_padded_size)
   );
   arena->top_block->offset -= stack->elem_padded_size;
+  --stack->elem_count;
   return elem;
 }

@@ -70,7 +70,12 @@ int main(void) {
   lf_init_flow(&flow, &parent_plus_fn_call);
   lf_eval_flow(&flow);
 
-  LF_Logger logger = { .min_level = LF_INFO };
+  LF_Logger logger = {
+    .time_fmt = NULL,
+    .min_level = LF_INFO,
+    .is_colored = true
+  };
+  lf_init_logger(&logger);
   int res = (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int;
   lf_log_info(&logger, "res = %d", res);
 

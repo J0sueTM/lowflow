@@ -19,7 +19,6 @@ typedef enum LF_LogLevel {
 #endif
 
 typedef struct LF_Logger {
-  void *out;
   LF_LogLevel min_level;
   LF_String buf;
   const char *time_fmt;
