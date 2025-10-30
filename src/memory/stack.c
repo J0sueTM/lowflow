@@ -51,3 +51,9 @@ char *lf_pop_from_stack(LF_Stack *stack) {
   --stack->elem_count;
   return elem;
 }
+
+bool lf_is_stack_empty(LF_Stack *stack) {
+  assert(stack);
+
+  return stack->elem_count == 0;
+}

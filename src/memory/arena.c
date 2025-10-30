@@ -21,7 +21,8 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size) {
   assert(size > 0);
 
   LF_MemBlock *top_block = arena->top_block;
-  if (size <= arena->block_size) {
+  size_t remaining_size = top_block->size - top_block->offset;
+  if (size <= remaining_size) {
     size_t filled_offset = top_block->offset + size;
     char *ptr = top_block->data + top_block->offset;
     top_block->offset = filled_offset;

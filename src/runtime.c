@@ -1,5 +1,85 @@
 #include "./runtime.h"
 
+static void _lf_build_val_schedule(
+  LF_Flow *flow,
+  LF_Value *entrypoint
+) {
+  assert(flow);
+  assert(entrypoint);
+
+  lf_log_debug(&flow->logger, "beg build flow val schedule [flow=%x]", flow);
+
+#ifndef LF_FLOW_VAL_TO_VISIT_QTT_IN_BLOCK
+#define LF_FLOW_VAL_TO_VISIT_QTT_IN_BLOCK 256
+#endif
+
+#ifndef LF_FLOW_VISITED_VAL_QTT_IN_BLOCK
+#define LF_FLOW_VAL_TO_VISIT_QTT_IN_BLOCK 256
+#endif
+
+#ifndef LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK
+#define LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK 256
+#endif
+
+  LF_Stack vals_to_visit = {
+    .elem_size = sizeof(LF_Value *),
+    .elem_alignment = alignof(LF_Value *),
+    .elem_qtt_in_block = LF_FLOW_VAL_TO_VISIT_QTT_IN_BLOCK
+  };
+  lf_init_stack(&vals_to_visit);
+  LF_Value **entrypoint_val = (LF_Value **)lf_alloc_stack_elem(
+    &vals_to_visit
+  );
+  *entrypoint_val = entrypoint;
+
+  flow->val_schedule.elem_size = sizeof(LF_Value *);
+  flow->val_schedule.elem_alignment = alignof(LF_Value *);
+  flow->val_schedule.elem_qtt_in_block = LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK;
+  lf_init_list(&flow->val_schedule);
+
+  while (!lf_is_stack_empty(&vals_to_visit)) {
+    LF_Value **tmp_cur_val = (LF_Value **)lf_pop_from_stack(&vals_to_visit);
+    // Future (*tmp_cur_val) wouldn't work because it will be overwritten
+    // at the next stack push. That's why we get the pointer back into
+    // another variable, so we don't lose it.
+    LF_Value *cur_val = *tmp_cur_val;
+
+    bool already_scheduled = (bool)lf_get_list_elem_by_content(
+      &flow->val_schedule,
+      (char *)&cur_val
+    );
+    if (already_scheduled) {
+      continue;
+    }
+
+    LF_Value **scheduled_val = (LF_Value **)lf_alloc_list_elem(
+      &flow->val_schedule, 1
+    );
+    *scheduled_val = cur_val;
+
+    bool is_leaf = (cur_val->type & PRIMITIVE_MASK) != 0;
+    if (is_leaf) {
+      continue;
+    }
+
+    // If not a leaf (primitive), it's a function.
+    size_t arg_qtt = cur_val->inner_val->func_def_spec->arg_qtt;
+    for (size_t i = 0; i < arg_qtt; ++i) {
+      LF_Value **arg_val_to_visit = (LF_Value **)lf_alloc_stack_elem(
+        &vals_to_visit
+      );
+      *arg_val_to_visit = &cur_val->func_call_spec->args[i];
+    }
+  }
+
+  lf_log_debug(
+    &flow->logger,
+    "end init flow [flow=%x, scheduled_count=%d]",
+    flow,
+    flow->val_schedule.elem_count
+  );
+}
+
 void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   assert(flow);
   assert(entrypoint);
@@ -10,63 +90,7 @@ void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
 
   lf_log_debug(&flow->logger, "beg init flow [flow=%x]", flow);
 
-#ifndef LF_FLOW_VISITED_VAL_QTT_IN_BLOCK
-#define LF_FLOW_VISITED_VAL_QTT_IN_BLOCK 500
-#endif
-
-  LF_List visited_vals = {
-    .elem_size = sizeof(LF_Value *),
-    .elem_alignment = alignof(LF_Value *),
-    .elem_qtt_in_block = LF_FLOW_VISITED_VAL_QTT_IN_BLOCK
-  };
-  lf_init_list(&visited_vals);
-
-  LF_Value **entrypoint_val = (LF_Value **)lf_alloc_list_elem(
-      &visited_vals, 1
-  );
-  *entrypoint_val = entrypoint;
-
-  LF_Value **cur_val = entrypoint_val;
-  do {
-    bool is_leaf = ((*cur_val)->type & PRIMITIVE_MASK) != 0;
-    if (is_leaf) {
-      goto next_visited_val;
-    }
-
-    size_t arg_qtt = (*cur_val)->inner_val->func_def_spec->arg_qtt;
-    LF_Value **arg_vals = (LF_Value **)lf_alloc_list_elem(
-      &visited_vals, arg_qtt
-    );
-    for (size_t i = 0; i < arg_qtt; ++i) {
-      arg_vals[i] = &(*cur_val)->func_call_spec->args[i];
-    }
-
-  next_visited_val:
-    cur_val = (LF_Value **)lf_get_next_list_elem(
-      &visited_vals,
-      (char *)cur_val
-    );
-  } while (cur_val);
-
-  flow->val_schedule.elem_size = sizeof(LF_Value *);
-  flow->val_schedule.elem_alignment = alignof(LF_Value *);
-  flow->val_schedule.elem_qtt_in_block = LF_FLOW_FRAME_VAL_QTT_IN_BLOCK;
-  lf_init_list(&flow->val_schedule);
-
-  LF_Value **cur_visited_val = (LF_Value **)lf_get_last_list_elem(
-    &visited_vals
-  );
-  while (cur_visited_val) {
-    LF_Value **val_to_schedule = (LF_Value **)lf_alloc_list_elem(
-      &flow->val_schedule, 1
-    );
-    *val_to_schedule = *cur_visited_val;
-
-    cur_visited_val = (LF_Value **)lf_get_prev_list_elem(
-      &visited_vals,
-      (char *)cur_visited_val
-    );
-  }
+  _lf_build_val_schedule(flow, entrypoint);
 
   flow->frame_vals.elem_qtt_in_block = (
     LF_FLOW_FRAME_VAL_QTT_IN_BLOCK * sizeof(LF_Value *)
@@ -82,12 +106,7 @@ void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   flow->new_vals.elem_alignment = alignof(LF_Value);
   lf_init_stack(&flow->new_vals);
 
-  lf_log_debug(
-    &flow->logger,
-    "end init flow [flow=%x, elem_count=%ld]",
-    flow,
-    flow->val_schedule.elem_count
-  );
+  lf_log_debug(&flow->logger, "end init flow [flow=%x]", flow);
 }
 
 void lf_eval_flow(LF_Flow *flow) {

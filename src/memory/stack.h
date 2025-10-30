@@ -20,4 +20,6 @@ void lf_reset_stack(LF_Stack *stack);
 
 char *lf_pop_from_stack(LF_Stack *stack);
 
+bool lf_is_stack_empty(LF_Stack *stack);
+
 #endif
