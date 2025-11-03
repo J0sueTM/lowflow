@@ -10,11 +10,11 @@ void plus_fn_native_impl(
   LF_Value *out,
   LF_Stack *frame_vals
 ) {
-  LF_Value **snd_arg_val = (LF_Value **)lf_pop_from_stack(frame_vals);
-  LF_Value **fst_arg_val = (LF_Value **)lf_pop_from_stack(frame_vals);
+  LF_Value *snd_arg_val = *(LF_Value **)lf_pop_from_stack(frame_vals);
+  LF_Value *fst_arg_val = *(LF_Value **)lf_pop_from_stack(frame_vals);
 
-  int fst = (*fst_arg_val)->as_int;
-  int snd = (*snd_arg_val)->as_int;
+  int fst = fst_arg_val->as_int;
+  int snd = snd_arg_val->as_int;
   int res = fst + snd;
 
   out->type = LF_INT;
@@ -39,22 +39,21 @@ int main(void) {
     .func_def_spec = &plus_fn_def,
   };
 
-  // LF_Value child_plus_fn_call_args[] = {
-  //   { .type = LF_INT, .as_int = 4 },
-  //   { .type = LF_INT, .as_int = 5 }
-  // };
-  // LF_FuncCallSpec child_plus_fn_call_spec = {
-  //   .args = child_plus_fn_call_args
-  // };
-  // LF_Value child_plus_fn_call = {
-  //   .type = LF_FUNC_CALL,
-  //   .func_call_spec = &child_plus_fn_call_spec,
-  //   .inner_val = &plus_fn
-  // };
+  LF_Value child_plus_fn_call_args[] = {
+    { .type = LF_INT, .as_int = 4 },
+    { .type = LF_INT, .as_int = 5 }
+  };
+  LF_FuncCallSpec child_plus_fn_call_spec = {
+    .args = child_plus_fn_call_args
+  };
+  LF_Value child_plus_fn_call = {
+    .type = LF_FUNC_CALL,
+    .func_call_spec = &child_plus_fn_call_spec,
+    .inner_val = &plus_fn
+  };
 
   LF_Value parent_plus_fn_call_args[] = {
-    // child_plus_fn_call,
-    { .type = LF_INT, .as_int = 4 },
+    child_plus_fn_call,
     { .type = LF_INT, .as_int = 2 }
   };
   LF_FuncCallSpec parent_plus_fn_call_spec = {

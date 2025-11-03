@@ -1,5 +1,41 @@
 #include "./runtime.h"
 
+static void _lf_reverse_val_schedule(
+  LF_Flow *flow,
+  LF_Stack *reverse_val_schedule
+) {
+  lf_log_debug(
+    &flow->logger,
+    "beg reverse val schedule [flow=%x]",
+    flow
+  );
+  
+  flow->val_schedule.elem_size = sizeof(LF_Value *);
+  flow->val_schedule.elem_alignment = alignof(LF_Value *);
+  flow->val_schedule.elem_qtt_in_block = LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK;
+  lf_init_list(&flow->val_schedule);
+
+  LF_Value **cur_val;
+  while (!lf_is_stack_empty(reverse_val_schedule)) {
+    cur_val = (LF_Value **)lf_pop_from_stack(
+      reverse_val_schedule
+    );
+    LF_Value **scheduled_val = (LF_Value **)lf_alloc_list_elem(
+      &flow->val_schedule, 1
+    );
+    *scheduled_val = *cur_val;
+  }
+
+  lf_log_debug(
+    &flow->logger,
+    "end reverse val schedule [flow=%x]",
+    flow
+  );
+}
+
+// NOTE: This function assumes that when encountering a func call,
+// function calls come before primitives. This ensures correct depth  
+// first search visit path.
 static void _lf_build_val_schedule(
   LF_Flow *flow,
   LF_Value *entrypoint
@@ -17,10 +53,6 @@ static void _lf_build_val_schedule(
 #define LF_FLOW_VAL_TO_VISIT_QTT_IN_BLOCK 256
 #endif
 
-#ifndef LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK
-#define LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK 256
-#endif
-
   LF_Stack vals_to_visit = {
     .elem_size = sizeof(LF_Value *),
     .elem_alignment = alignof(LF_Value *),
@@ -32,30 +64,32 @@ static void _lf_build_val_schedule(
   );
   *entrypoint_val = entrypoint;
 
-  flow->val_schedule.elem_size = sizeof(LF_Value *);
-  flow->val_schedule.elem_alignment = alignof(LF_Value *);
-  flow->val_schedule.elem_qtt_in_block = LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK;
-  lf_init_list(&flow->val_schedule);
+  LF_Stack reverse_val_schedule = {
+    .elem_size = sizeof(LF_Value *),
+    .elem_alignment = alignof(LF_Value *),
+    .elem_qtt_in_block = LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK
+  };
+  lf_init_stack(&reverse_val_schedule);
 
   while (!lf_is_stack_empty(&vals_to_visit)) {
     LF_Value **tmp_cur_val = (LF_Value **)lf_pop_from_stack(&vals_to_visit);
-    // Future (*tmp_cur_val) wouldn't work because it will be overwritten
-    // at the next stack push. That's why we get the pointer back into
-    // another variable, so we don't lose it.
+    // NOTE: Future (*tmp_cur_val) wouldn't work because it will be
+    // overwritten at the next stack push. That's why we get the
+    // pointer back into another variable, so we don't lose it.
     LF_Value *cur_val = *tmp_cur_val;
 
-    bool already_scheduled = (bool)lf_get_list_elem_by_content(
-      &flow->val_schedule,
+    bool already_scheduled = (bool)lf_get_stack_elem_by_content(
+      &reverse_val_schedule,
       (char *)&cur_val
     );
     if (already_scheduled) {
       continue;
     }
 
-    LF_Value **scheduled_val = (LF_Value **)lf_alloc_list_elem(
-      &flow->val_schedule, 1
+    LF_Value **rev_scheduled_val = (LF_Value **)lf_alloc_stack_elem(
+      &reverse_val_schedule
     );
-    *scheduled_val = cur_val;
+    *rev_scheduled_val = cur_val;
 
     bool is_leaf = (cur_val->type & PRIMITIVE_MASK) != 0;
     if (is_leaf) {
@@ -72,6 +106,8 @@ static void _lf_build_val_schedule(
     }
   }
 
+  _lf_reverse_val_schedule(flow, &reverse_val_schedule);
+  
   lf_log_debug(
     &flow->logger,
     "end init flow [flow=%x, scheduled_count=%d]",
@@ -132,11 +168,27 @@ void lf_eval_flow(LF_Flow *flow) {
         if (!func_def->func_def_spec->native_impl) {
           lf_log_fatal(
             &flow->logger,
-            "eval flow: func has no native impl [f=%x, fu=%x]",
+            "eval flow: func has no native impl [flow=%x, def=%x]",
             flow,
             func_def
           );
         }
+
+        size_t func_arg_qtt = func_def->func_def_spec->arg_qtt;
+        size_t frame_val_qtt = flow->frame_vals.elem_count;
+        if (frame_val_qtt < func_arg_qtt) {
+          lf_log_fatal(
+            &flow->logger,
+            "eval flow: not enough vals in frame for func call [flow=%x, expected=%d, got=%d]",
+            flow,
+            func_arg_qtt,
+            frame_val_qtt
+          );
+          // TODO: Stuff above the flow expects results. This should
+          // return an Option instead of stop everything.
+          goto finish_eval;
+        }
+        
         func_def->func_def_spec->native_impl(new_res_val, &flow->frame_vals);
         lf_reset_stack(&flow->frame_vals);
         LF_Value **res_in_frame = (LF_Value **)lf_alloc_stack_elem(
@@ -158,5 +210,6 @@ void lf_eval_flow(LF_Flow *flow) {
     );
   }
 
+finish_eval:
   lf_log_debug(&flow->logger, "end eval flow [flow=%x]", flow);
 }

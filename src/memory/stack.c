@@ -40,7 +40,10 @@ void lf_reset_stack(LF_Stack *stack) {
 
 char *lf_pop_from_stack(LF_Stack *stack) {
   assert(stack);
-  assert(stack->elem_count > 0);
+
+  if (stack->elem_count <= 0) {
+    return NULL;
+  }
 
   LF_Arena *arena = &stack->arena;
   char *elem = (
@@ -56,4 +59,15 @@ bool lf_is_stack_empty(LF_Stack *stack) {
   assert(stack);
 
   return stack->elem_count == 0;
+}
+
+char *lf_get_stack_elem_by_content(LF_Stack *stack, char *content) {
+  assert(stack);
+
+  return lf_get_arena_elem_by_content(
+    &stack->arena,
+    content,
+    stack->elem_size,
+    stack->elem_padded_size
+  );
 }

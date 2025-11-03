@@ -21,6 +21,10 @@ typedef struct LF_Flow {
 #define LF_FLOW_NEW_VAL_QTT_IN_BLOCK 256
 #endif
 
+#ifndef LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK
+#define LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK 256
+#endif
+
 void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint);
 void lf_eval_flow(LF_Flow *flow);
 

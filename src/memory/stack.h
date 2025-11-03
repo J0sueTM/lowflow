@@ -22,4 +22,6 @@ char *lf_pop_from_stack(LF_Stack *stack);
 
 bool lf_is_stack_empty(LF_Stack *stack);
 
+char *lf_get_stack_elem_by_content(LF_Stack *stack, char *content);
+
 #endif

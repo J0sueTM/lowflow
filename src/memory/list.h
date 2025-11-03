@@ -28,6 +28,4 @@ char *lf_get_last_list_elem(LF_List *list);
 
 char *lf_get_list_elem_by_pos(LF_List *list, size_t pos);
 
-char *lf_get_list_elem_by_content(LF_List *list, char *content);
-
 #endif

@@ -34,4 +34,12 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size);
 
 void lf_reset_arena(LF_Arena *arena);
 
+// Assumes same sized elements.
+char *lf_get_arena_elem_by_content(
+  LF_Arena *arena,
+  char *content,
+  size_t elem_size,
+  size_t elem_padded_size
+);
+
 #endif // LF_ARENA_H
