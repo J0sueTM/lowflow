@@ -1,0 +1,16 @@
+project_name: "lowflow"
+default_status: "To Do"
+statuses: ["To Do", "In Progress", "Done"]
+labels: []
+milestones: []
+date_format: dd/mm/yyyy
+max_column_width: 20
+default_editor: "vim"
+auto_open_browser: true
+default_port: 6420
+remote_operations: true
+auto_commit: true
+zero_padded_ids: 5
+bypass_git_hooks: false
+check_active_branches: true
+active_branch_days: 30
