@@ -20,8 +20,8 @@ typedef struct LF_MemBlock {
 } LF_MemBlock;
 
 typedef struct LF_Arena {
-  LF_MemBlock head_block;
-  LF_MemBlock *top_block;
+  LF_MemBlock *head_block;
+  LF_MemBlock *tail_block;
   size_t block_count;
   size_t block_size;
 
@@ -29,6 +29,8 @@ typedef struct LF_Arena {
 } LF_Arena;
 
 void lf_init_arena(LF_Arena *arena);
+
+LF_MemBlock *lf_alloc_arena_memblock(LF_Arena *arena);
 
 char *lf_arena_alloc(LF_Arena *arena, size_t size);
 

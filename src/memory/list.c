@@ -53,7 +53,7 @@ char *lf_get_next_list_elem(LF_List *list, char *elem) {
   LF_MemBlock *cur_block = (
     (is_elem_in_cursor_block)
       ? arena->cursor_block
-      : &arena->head_block
+      : arena->head_block
   );
   for (size_t i = 0; i < arena->block_count; ++i) {
     char *last_elem = (
@@ -111,7 +111,7 @@ char *lf_get_prev_list_elem(LF_List *list, char *elem) {
   LF_MemBlock *cur_block = (
     (is_elem_in_cursor_block)
       ? arena->cursor_block
-      : &arena->head_block
+      : arena->head_block
   );
   for (size_t i = 0; i < arena->block_count; ++i) {
     char *last_elem = (
@@ -153,8 +153,8 @@ char *lf_get_prev_list_elem(LF_List *list, char *elem) {
 char *lf_get_first_list_elem(LF_List *list) {
   assert(list);
 
-  list->arena.cursor_block = &list->arena.head_block;
-  return list->arena.head_block.data;
+  list->arena.cursor_block = list->arena.head_block;
+  return list->arena.head_block->data;
 }
 
 char *lf_get_last_list_elem(LF_List *list) {
@@ -163,12 +163,12 @@ char *lf_get_last_list_elem(LF_List *list) {
   // TODO: this calculation is wrong.
   // 500 % 2 = 0, but should be 2, because we want the second
   // elem.
-  list->arena.cursor_block = list->arena.top_block;
+  list->arena.cursor_block = list->arena.tail_block;
   size_t elem_qtt_in_last_block = (
     list->elem_qtt_in_block % list->elem_count
   );
   return (
-    list->arena.top_block->data
+    list->arena.tail_block->data
     + elem_qtt_in_last_block
     * list->elem_padded_size
   );
@@ -183,7 +183,7 @@ char *lf_get_list_elem_by_pos(LF_List *list, size_t pos) {
 
   // TODO: Optimization. Start from the top or the head depending
   // on distance.
-  LF_MemBlock *cur_block = &arena->head_block;
+  LF_MemBlock *cur_block = arena->head_block;
   for (size_t i = 0; i < block_pos; ++i) {
     cur_block = cur_block->next;
   }
