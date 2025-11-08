@@ -13,8 +13,6 @@ typedef struct LF_MemBlock {
   size_t offset;
   size_t size;
 
-  // TODO: Implement me.
-  // size_t idx;
   LF_MemBlock *prev;
   LF_MemBlock *next;
 } LF_MemBlock;
@@ -31,6 +29,10 @@ typedef struct LF_Arena {
 void lf_init_arena(LF_Arena *arena);
 
 LF_MemBlock *lf_alloc_arena_memblock(LF_Arena *arena);
+
+LF_MemBlock *lf_dealloc_arena_head_memblock(LF_Arena *arena);
+
+LF_MemBlock *lf_dealloc_arena_tail_memblock(LF_Arena *arena);
 
 char *lf_arena_alloc(LF_Arena *arena, size_t size);
 
