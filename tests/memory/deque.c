@@ -3,10 +3,10 @@
 #include "../../src/memory/deque.h"
 #include "../../vendor/munit/munit.h"
 
-static MunitResult test_push_head__empty_head_block(
+static MunitResult test_push_head_empty_head_block(
   const MunitParameter params[],
   void *data
-  ) {
+) {
   (void)params;
   (void)data;
 
@@ -17,7 +17,7 @@ static MunitResult test_push_head__empty_head_block(
   };
   lf_init_deque(&deque);
 
-  double elem = *(double *)lf_alloc_deque_head_elem(&deque);
+  lf_alloc_deque_head_elem(&deque);
 
   munit_assert_size(deque.elem_count, ==, 1);
   munit_assert_size(deque.arena.block_count, ==, 1);
@@ -27,10 +27,10 @@ static MunitResult test_push_head__empty_head_block(
   return MUNIT_OK;
 }
 
-static MunitResult test_push_tail__empty_head_block(
+static MunitResult test_push_tail_empty_head_block(
   const MunitParameter params[],
   void *data
-  ) {
+) {
   (void)params;
   (void)data;
 
@@ -41,7 +41,7 @@ static MunitResult test_push_tail__empty_head_block(
   };
   lf_init_deque(&deque);
 
-  double elem = *(double *)lf_alloc_deque_tail_elem(&deque);
+  lf_alloc_deque_tail_elem(&deque);
 
   munit_assert_size(deque.elem_count, ==, 1);
   munit_assert_size(deque.arena.block_count, ==, 2);
@@ -51,10 +51,10 @@ static MunitResult test_push_tail__empty_head_block(
   return MUNIT_OK;
 }
 
-static MunitResult test_pop_head__single_elem(
+static MunitResult test_pop_head_single_elem(
   const MunitParameter params[],
   void *data
-  ) {
+) {
   (void)params;
   (void)data;
 
@@ -78,10 +78,10 @@ static MunitResult test_pop_head__single_elem(
   return MUNIT_OK;
 }
 
-static MunitResult test_pop_head__multiple_blocks(
+static MunitResult test_pop_head_multiple_blocks(
   const MunitParameter params[],
   void *data
-  ) {
+) {
   (void)params;
   (void)data;
 
@@ -114,10 +114,10 @@ static MunitResult test_pop_head__multiple_blocks(
   return MUNIT_OK;
 }
 
-static MunitResult test_pop_tail__multiple_blocks(
+static MunitResult test_pop_tail_multiple_blocks(
   const MunitParameter params[],
   void *data
-  ) {
+) {
   (void)params;
   (void)data;
 
@@ -151,7 +151,7 @@ static MunitResult test_pop_tail__multiple_blocks(
   return MUNIT_OK;
 }
 
-static MunitResult test_pop_tail__single_elem(
+static MunitResult test_pop_tail_single_elem(
   const MunitParameter params[],
   void *data
 ) {
@@ -179,7 +179,8 @@ static MunitResult test_pop_tail__single_elem(
 }
 
 static MunitResult test_deque_grows_when_tail_is_pushed_after_head_full(
-  const MunitParameter params[], void *data
+  const MunitParameter params[],
+  void *data
 ) {
   (void)params; (void)data;
 
@@ -204,7 +205,8 @@ static MunitResult test_deque_grows_when_tail_is_pushed_after_head_full(
 }
 
 static MunitResult test_deque_frees_blocks_when_emptied(
-  const MunitParameter params[], void *data
+  const MunitParameter params[],
+  void *data
 ) {
   (void)params; (void)data;
 
@@ -233,7 +235,8 @@ static MunitResult test_deque_frees_blocks_when_emptied(
 }
 
 static MunitResult test_deque_reuses_existing_blocks(
-  const MunitParameter params[], void *data
+  const MunitParameter params[],
+  void *data
 ) {
   (void)params; (void)data;
 
@@ -299,14 +302,12 @@ static MunitResult test_deque_complex_growth_and_release(
   };
   lf_init_deque(&deque);
 
-  // Fill up multiple times to trigger 3 blocks.
   for (int i = 0; i < 9; i++) {
     double *e = (double *)lf_alloc_deque_head_elem(&deque);
     *e = (double)i;
   }
   munit_assert_size(deque.arena.block_count, ==, 3);
 
-  // Pop a few from head and tail.
   lf_pop_head_elem_from_deque(&deque);
   lf_pop_tail_elem_from_deque(&deque);
 
@@ -439,17 +440,17 @@ static MunitResult test_integration(
 static MunitTest deque_tests[] = {
   {
     .name = "/push/head/empty_head_block",
-    .test = test_push_head__empty_head_block,
+    .test = test_push_head_empty_head_block,
     .setup = NULL,
     .tear_down = NULL,
     .options = MUNIT_TEST_OPTION_NONE,
     .parameters = NULL,
   },
-  { "/push/tail/empty_head_block", test_push_tail__empty_head_block, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { "/pop/head/single_elem", test_pop_head__single_elem, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { "/pop/head/multiple_blocks", test_pop_head__multiple_blocks, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { "/pop/tail/single_elem", test_pop_tail__single_elem, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
-  { "/pop/tail/multiple_blocks", test_pop_tail__multiple_blocks, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { "/push/tail/empty_head_block", test_push_tail_empty_head_block, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { "/pop/head/single_elem", test_pop_head_single_elem, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { "/pop/head/multiple_blocks", test_pop_head_multiple_blocks, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { "/pop/tail/single_elem", test_pop_tail_single_elem, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { "/pop/tail/multiple_blocks", test_pop_tail_multiple_blocks, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { "/grow/tail_after_head_full", test_deque_grows_when_tail_is_pushed_after_head_full, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { "/free/blocks_when_emptied", test_deque_frees_blocks_when_emptied, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
   { "/reuse/blocks", test_deque_reuses_existing_blocks, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },

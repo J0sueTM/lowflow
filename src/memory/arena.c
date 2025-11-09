@@ -4,6 +4,7 @@ void lf_init_arena(LF_Arena *arena) {
   assert(arena);
   assert(arena->block_size);
 
+  arena->block_count = 0;
   arena->head_block = lf_alloc_arena_memblock(arena);
   arena->head_block->offset = 0;
   arena->head_block->prev = NULL;
@@ -11,54 +12,7 @@ void lf_init_arena(LF_Arena *arena) {
 
   arena->tail_block = arena->head_block;
 
-  arena->block_count = 1;
   arena->cursor_block = arena->head_block;
-}
-
-LF_MemBlock *lf_alloc_arena_memblock(LF_Arena *arena) {
-  assert(arena);
-
-  LF_MemBlock *new_block = (LF_MemBlock *)malloc(sizeof(LF_MemBlock));
-  assert(new_block);
-  new_block->size = arena->block_size;
-  new_block->next = NULL;
-  new_block->offset = 0;
-  ++arena->block_count;
-  
-  new_block->data = (char *)malloc(arena->block_size);
-  assert(new_block->data);
-
-  return new_block;
-}
-
-LF_MemBlock *lf_dealloc_arena_head_memblock(LF_Arena *arena) {
-  assert(arena);
-
-  if (arena->block_count <= 1) {
-    return arena->head_block;
-  }
-  
-  LF_MemBlock *next_block = arena->head_block->next;
-  free(arena->head_block);
-  arena->head_block = next_block;
-  --arena->block_count;
-
-  return arena->head_block;
-}
-
-LF_MemBlock *lf_dealloc_arena_tail_memblock(LF_Arena *arena) {
-  assert(arena);
-
-  if (arena->block_count <= 1) {
-    return arena->tail_block;
-  }
-
-  LF_MemBlock *prev_block = arena->tail_block->prev;
-  free(arena->tail_block);
-  arena->tail_block = prev_block;
-  --arena->block_count;
-
-  return arena->tail_block;
 }
 
 char *lf_arena_alloc(LF_Arena *arena, size_t size) {
@@ -83,6 +37,74 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size) {
   return new_block->data;
 }
 
+LF_MemBlock *lf_alloc_arena_memblock(LF_Arena *arena) {
+  assert(arena);
+
+  LF_MemBlock *new_block = (LF_MemBlock *)malloc(sizeof(LF_MemBlock));
+  assert(new_block);
+  new_block->size = arena->block_size;
+  new_block->next = NULL;
+  new_block->offset = 0;
+  ++arena->block_count;
+  
+  new_block->data = (char *)malloc(arena->block_size);
+  assert(new_block->data);
+
+  return new_block;
+}
+
+void lf_dealloc_arena_memblock(LF_Arena *arena, LF_MemBlock *block) {
+  assert(block);
+
+  LF_MemBlock *prev_block = block->prev;
+  LF_MemBlock *next_block = block->next;
+
+  if (prev_block) {
+    prev_block->next = next_block;
+  }
+
+  if (next_block) {
+    next_block->prev = prev_block;
+  }
+
+  --arena->block_count;
+
+  free(block->data);
+  free(block);
+}
+
+LF_MemBlock *lf_dealloc_arena_head_memblock(LF_Arena *arena) {
+  assert(arena);
+
+  if (arena->block_count <= 1) {
+    return arena->head_block;
+  }
+
+  LF_MemBlock *next_block = arena->head_block->next;
+  assert(next_block);
+
+  lf_dealloc_arena_memblock(arena, arena->head_block);
+  arena->head_block = next_block;
+
+  return arena->head_block;
+}
+
+LF_MemBlock *lf_dealloc_arena_tail_memblock(LF_Arena *arena) {
+  assert(arena);
+
+  if (arena->block_count <= 1) {
+    return arena->tail_block;
+  }
+
+  LF_MemBlock *prev_block = arena->tail_block->prev;
+  assert(prev_block);
+
+  lf_dealloc_arena_memblock(arena, arena->tail_block);
+  arena->tail_block = prev_block;
+
+  return arena->tail_block;
+}
+
 // TODO: Retain allocated blocks for faster reuse, but this can
 // lead to unbounded memory growth if a workload temporarily spikes.
 // Consider adding a configurable cap: if the arena's total capacity
@@ -94,6 +116,19 @@ void lf_reset_arena(LF_Arena *arena) {
   while (cur_block) {
     cur_block->offset = 0;
     cur_block = cur_block->next;
+  }
+}
+
+void lf_dealloc_arena(LF_Arena *arena) {
+  assert(arena);
+
+  LF_MemBlock *cur_block = arena->head_block;
+  LF_MemBlock *next_block = NULL;
+  while (cur_block) {
+    next_block = cur_block->next;
+    free(cur_block->data);
+    free(cur_block);
+    cur_block = next_block;
   }
 }
 

@@ -28,15 +28,19 @@ typedef struct LF_Arena {
 
 void lf_init_arena(LF_Arena *arena);
 
+char *lf_arena_alloc(LF_Arena *arena, size_t size);
+
 LF_MemBlock *lf_alloc_arena_memblock(LF_Arena *arena);
+
+void lf_dealloc_arena_memblock(LF_Arena *arena, LF_MemBlock *block);
 
 LF_MemBlock *lf_dealloc_arena_head_memblock(LF_Arena *arena);
 
 LF_MemBlock *lf_dealloc_arena_tail_memblock(LF_Arena *arena);
 
-char *lf_arena_alloc(LF_Arena *arena, size_t size);
-
 void lf_reset_arena(LF_Arena *arena);
+
+void lf_dealloc_arena(LF_Arena *arena);
 
 // Assumes same sized elements.
 char *lf_get_arena_elem_by_content(

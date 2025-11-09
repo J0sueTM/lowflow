@@ -39,9 +39,11 @@ char *lf_alloc_deque_head_elem(LF_Deque *deque) {
  
   LF_MemBlock *new_head_block = lf_alloc_arena_memblock(arena);
   new_head_block->next = head_block;
+  new_head_block->prev = NULL;
   if (!arena->tail_block) {
     arena->tail_block = arena->head_block;
   }
+  head_block->prev = new_head_block;
   arena->head_block = new_head_block;
 
   new_head_block->offset = arena->block_size;
