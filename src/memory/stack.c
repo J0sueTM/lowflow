@@ -31,7 +31,7 @@ void lf_reset_stack(LF_Stack *stack) {
   assert(stack);
 
   LF_Arena *arena = &stack->arena;
-  LF_MemBlock *cur_block = &arena->head_block;
+  LF_MemBlock *cur_block = arena->head_block;
   while (cur_block) {
     cur_block->offset = 0;
     cur_block = cur_block->next;
@@ -46,12 +46,16 @@ char *lf_pop_from_stack(LF_Stack *stack) {
   }
 
   LF_Arena *arena = &stack->arena;
-  char *elem = (
-    arena->top_block->data +
-    ((stack->elem_count - 1) * stack->elem_padded_size)
-  );
-  arena->top_block->offset -= stack->elem_padded_size;
+  LF_MemBlock *tail_block = arena->tail_block;
+  if (tail_block->offset <= 0) {
+    tail_block = lf_dealloc_arena_tail_memblock(arena);
+  }
+  
+  size_t new_offset = tail_block->offset - stack->elem_padded_size;
+  char *elem = tail_block->data + new_offset;
+  tail_block->offset = new_offset;
   --stack->elem_count;
+
   return elem;
 }
 

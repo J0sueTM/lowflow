@@ -4,45 +4,105 @@ void lf_init_arena(LF_Arena *arena) {
   assert(arena);
   assert(arena->block_size);
 
-  arena->head_block.data = (char *)malloc(arena->block_size);
-  assert(arena->head_block.data);
+  arena->block_count = 0;
+  arena->head_block = lf_alloc_arena_memblock(arena);
+  arena->head_block->offset = 0;
+  arena->head_block->prev = NULL;
+  arena->head_block->next = NULL;
 
-  arena->block_count = 1;
-  arena->block_size = arena->block_size;
-  arena->head_block.offset = 0;
-  arena->head_block.size = arena->block_size;
-  arena->head_block.next = NULL;
-  arena->top_block = &arena->head_block;
-  arena->cursor_block = &arena->head_block;
+  arena->tail_block = arena->head_block;
+
+  arena->cursor_block = arena->head_block;
 }
 
 char *lf_arena_alloc(LF_Arena *arena, size_t size) {
   assert(arena);
   assert(size > 0);
 
-  LF_MemBlock *top_block = arena->top_block;
-  size_t remaining_size = top_block->size - top_block->offset;
+  LF_MemBlock *tail_block = arena->tail_block;
+  size_t remaining_size = tail_block->size - tail_block->offset;
   if (size <= remaining_size) {
-    size_t filled_offset = top_block->offset + size;
-    char *ptr = top_block->data + top_block->offset;
-    top_block->offset = filled_offset;
+    size_t filled_offset = tail_block->offset + size;
+    char *ptr = tail_block->data + tail_block->offset;
+    tail_block->offset = filled_offset;
     return ptr;
   }
 
+  LF_MemBlock *new_block = lf_alloc_arena_memblock(arena);
+  new_block->offset = size;
+  tail_block->next = new_block;
+  new_block->prev = tail_block;
+  arena->tail_block = new_block;
+
+  return new_block->data;
+}
+
+LF_MemBlock *lf_alloc_arena_memblock(LF_Arena *arena) {
+  assert(arena);
+
   LF_MemBlock *new_block = (LF_MemBlock *)malloc(sizeof(LF_MemBlock));
   assert(new_block);
-  new_block->offset = size;
   new_block->size = arena->block_size;
   new_block->next = NULL;
+  new_block->offset = 0;
   ++arena->block_count;
   
   new_block->data = (char *)malloc(arena->block_size);
   assert(new_block->data);
 
-  top_block->next = new_block;
-  arena->top_block = new_block;
+  return new_block;
+}
 
-  return new_block->data;
+void lf_dealloc_arena_memblock(LF_Arena *arena, LF_MemBlock *block) {
+  assert(block);
+
+  LF_MemBlock *prev_block = block->prev;
+  LF_MemBlock *next_block = block->next;
+
+  if (prev_block) {
+    prev_block->next = next_block;
+  }
+
+  if (next_block) {
+    next_block->prev = prev_block;
+  }
+
+  --arena->block_count;
+
+  free(block->data);
+  free(block);
+}
+
+LF_MemBlock *lf_dealloc_arena_head_memblock(LF_Arena *arena) {
+  assert(arena);
+
+  if (arena->block_count <= 1) {
+    return arena->head_block;
+  }
+
+  LF_MemBlock *next_block = arena->head_block->next;
+  assert(next_block);
+
+  lf_dealloc_arena_memblock(arena, arena->head_block);
+  arena->head_block = next_block;
+
+  return arena->head_block;
+}
+
+LF_MemBlock *lf_dealloc_arena_tail_memblock(LF_Arena *arena) {
+  assert(arena);
+
+  if (arena->block_count <= 1) {
+    return arena->tail_block;
+  }
+
+  LF_MemBlock *prev_block = arena->tail_block->prev;
+  assert(prev_block);
+
+  lf_dealloc_arena_memblock(arena, arena->tail_block);
+  arena->tail_block = prev_block;
+
+  return arena->tail_block;
 }
 
 // TODO: Retain allocated blocks for faster reuse, but this can
@@ -52,10 +112,23 @@ char *lf_arena_alloc(LF_Arena *arena, size_t size) {
 void lf_reset_arena(LF_Arena *arena) {
   assert(arena);
 
-  LF_MemBlock *cur_block = &arena->head_block;
+  LF_MemBlock *cur_block = arena->head_block;
   while (cur_block) {
     cur_block->offset = 0;
     cur_block = cur_block->next;
+  }
+}
+
+void lf_dealloc_arena(LF_Arena *arena) {
+  assert(arena);
+
+  LF_MemBlock *cur_block = arena->head_block;
+  LF_MemBlock *next_block = NULL;
+  while (cur_block) {
+    next_block = cur_block->next;
+    free(cur_block->data);
+    free(cur_block);
+    cur_block = next_block;
   }
 }
 
@@ -79,7 +152,7 @@ char *lf_get_arena_elem_by_content(
   assert(content);
 
   LF_MemBlock *cur_block = arena->cursor_block;
-  LF_MemBlock *next_block = &arena->head_block;
+  LF_MemBlock *next_block = arena->head_block;
   while (cur_block) {
     char *last_elem = cur_block->data + cur_block->offset;
     for (

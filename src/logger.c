@@ -57,7 +57,7 @@ void lf_log(
 
   lf_reset_string(&logger->buf);
 
-  LF_MemBlock *head_block = &logger->buf.arena.head_block;
+  LF_MemBlock *head_block = logger->buf.arena.head_block;
   assert(head_block);
 
   time_t now = time(NULL);
