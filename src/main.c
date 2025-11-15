@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdalign.h>
 
-#include "./types.h"
-#include "./runtime.h"
-#include "./memory/stack.h"
+#include "./core/types.h"
+#include "./planning/passes/flow.h"
+#include "./runtime/flow.h"
+#include "./core/memory/stack.h"
 
 // TODO: return error.
 void plus_fn_native_impl(
