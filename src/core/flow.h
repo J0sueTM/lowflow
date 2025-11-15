@@ -1,5 +1,5 @@
-#ifndef LF_RUNTIME_H
-#define LF_RUNTIME_H
+#ifndef LF_FLOW
+#define LF_FLOW
 
 #include "./types.h"
 #include "./memory/list.h"
@@ -25,7 +25,4 @@ typedef struct LF_Flow {
 #define LF_FLOW_SCHEDULE_VAL_QTT_IN_BLOCK 256
 #endif
 
-void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint);
-void lf_eval_flow(LF_Flow *flow);
-
-#endif // LF_RUNTIME_H
+#endif

@@ -1,6 +1,6 @@
 #include <stdalign.h>
 
-#include "../../src/memory/deque.h"
+#include "../../src/core/memory/deque.h"
 #include "../../vendor/munit/munit.h"
 
 static MunitResult test_push_head_empty_head_block(
