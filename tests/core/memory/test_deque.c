@@ -1,7 +1,7 @@
 #include <stdalign.h>
 
-#include "../../src/core/memory/deque.h"
-#include "../../vendor/munit/munit.h"
+#include "../../../vendor/munit/munit.h"
+#include "../../../src/core/memory/deque.h"
 
 static MunitResult test_push_head_empty_head_block(
   const MunitParameter params[],
@@ -460,8 +460,8 @@ static MunitTest deque_tests[] = {
   {0},
 };
 
-static const MunitSuite deque_suite = {
-  .prefix = "/memory/deque",
+static const MunitSuite deque_test_suite = {
+  .prefix = "/deque",
   .tests = deque_tests,
   .suites = NULL,
   .iterations = 1,

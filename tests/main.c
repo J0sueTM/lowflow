@@ -1,19 +1,19 @@
 #include "../vendor/munit/munit.h"
-#include "./memory/deque.c"
+#include "./core/test_core.c"
 
-static MunitSuite inner_suites[] = {
-  deque_suite,
+static MunitSuite main_inner_suites[] = {
+  core_test_suite,
   { 0 }
 };
 
-static const MunitSuite main_suite = {
+static const MunitSuite main_test_suite = {
   .prefix = "lowflow",
   .tests = NULL,
-  .suites = inner_suites,
+  .suites = main_inner_suites,
   .iterations = 1,
   .options = MUNIT_SUITE_OPTION_NONE
 };
 
 int main(int argc, char *argv[MUNIT_ARRAY_PARAM(argc + 1)]) {
-  return munit_suite_main(&main_suite, (void *)"lowflow", argc, argv);
+  return munit_suite_main(&main_test_suite, (void *)"lowflow", argc, argv);
 }
