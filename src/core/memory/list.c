@@ -153,6 +153,10 @@ char *lf_get_prev_list_elem(LF_List *list, char *elem) {
 char *lf_get_first_list_elem(LF_List *list) {
   assert(list);
 
+  if (list->elem_count <= 0) {
+    return NULL;
+  }
+
   list->arena.cursor_block = list->arena.head_block;
   return list->arena.head_block->data;
 }

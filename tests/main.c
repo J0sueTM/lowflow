@@ -1,9 +1,11 @@
 #include "../vendor/munit/munit.h"
 #include "./core/test_core.c"
+#include "./planning/test_planning.c"
 
 static MunitSuite main_inner_suites[] = {
   core_test_suite,
-  { 0 }
+  planning_test_suite,
+  { 0 },
 };
 
 static const MunitSuite main_test_suite = {
