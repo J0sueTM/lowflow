@@ -154,7 +154,13 @@ char *lf_get_arena_elem_by_content(
   LF_MemBlock *cur_block = arena->cursor_block;
   LF_MemBlock *next_block = arena->head_block;
   while (cur_block) {
-    char *last_elem = cur_block->data + cur_block->offset;
+    bool is_block_empty = cur_block->offset < elem_padded_size;
+    if (is_block_empty) {
+      goto skip_block;
+      continue;
+    }
+    
+    char *last_elem = cur_block->data + cur_block->offset - elem_padded_size;
     for (
       char *cur_char = cur_block->data;
       cur_char <= last_elem;
@@ -180,10 +186,12 @@ char *lf_get_arena_elem_by_content(
       }
     }
 
+  skip_block:
     if (next_block == arena->cursor_block) {
       next_block = arena->cursor_block->next;
     }
     cur_block = next_block;
+    next_block = (cur_block) ? cur_block->next : NULL;
   }
 
   return NULL;

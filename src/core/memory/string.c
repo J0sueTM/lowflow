@@ -17,3 +17,8 @@ void lf_reset_string(LF_String *str) {
   lf_reset_arena(&str->arena);
   str->str_qtt = 0;
 }
+
+char *lf_string_to_cstr(LF_String *str) {
+  return str->arena.head_block->data;
+}
+

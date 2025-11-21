@@ -1,46 +1,36 @@
 #include "../../../vendor/munit/munit.h"
 #include "../../../src/planning/passes/passes.h"
+#include "./test_val_schedule.c"
 
-static void _pass_fn__change_val_schedule(LF_PassContext *ctx) {
+static void _pass_fn__change_val_schedule(LF_PassPipeline *ctx) {
   lf_alloc_stack_elem(&ctx->val_schedule);
 }
 
-static MunitResult test_passes__success(
+static MunitResult test_pass_pipeline__success(
   const MunitParameter params[],
   void *data
 ) {
-  LF_List passes = {
-    .elem_size = sizeof(LF_Pass),
-    .elem_alignment = alignof(LF_Pass),
-    .elem_qtt_in_block = 3
-  };
-  lf_init_list(&passes);
+  (void)params;
+  (void)data;
 
-  LF_Pass *new_pass = (LF_Pass *)lf_alloc_list_elem(&passes, 1);
-  new_pass->name.char_qtt_in_block = 10;
-  lf_init_string(&new_pass->name);
-  char *name = lf_alloc_string(&new_pass->name, 10);
-  strcpy(name, "first pass");
-  new_pass->run = _pass_fn__change_val_schedule;
+  LF_Value dumb_value = { 0 };
 
-  LF_PassContext ctx;
+  LF_PassPipeline pipeline;
+  lf_init_pass_pipeline(&pipeline, &dumb_value);
+  lf_build_pass(&pipeline, "fst_pass", _pass_fn__change_val_schedule);
+  lf_build_pass(&pipeline, "fst_pass", _pass_fn__change_val_schedule);
 
-  ctx.val_schedule.elem_size = sizeof(LF_Value *);
-  ctx.val_schedule.elem_qtt_in_block = 1;
-  ctx.val_schedule.elem_alignment = alignof(LF_Value *);
-  lf_init_stack(&ctx.val_schedule);
-  
-  lf_run_passes(&passes, &ctx);
+  lf_process_pass_pipeline(&pipeline);
 
-  munit_assert_size(ctx.val_schedule.elem_count, ==, 1);
+  munit_assert_size(pipeline.val_schedule.elem_count, ==, 2);
 
   return MUNIT_OK;
 }
 
-static MunitTest passes_tests[] = {
+static MunitTest pass_pipeline_tests[] = {
   {
-    .name = "/success",
-    .test = test_passes__success,
+    .name = "/pipeline/sucess",
+    .test = test_pass_pipeline__success,
     .setup = NULL,
     .tear_down = NULL,
     .options = MUNIT_TEST_OPTION_NONE,
@@ -49,9 +39,15 @@ static MunitTest passes_tests[] = {
   { 0 },
 };
 
+static MunitSuite passes_inner_test_suites[] = {
+  val_schedule_pass_test_suite,
+  { 0 },
+};
+
 static const MunitSuite passes_test_suite = {
   .prefix = "/passes",
-  .tests = passes_tests,
+  .tests = pass_pipeline_tests,
   .iterations = 1,
   .options = MUNIT_SUITE_OPTION_NONE,
+  .suites = passes_inner_test_suites
 };

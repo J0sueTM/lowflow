@@ -2,8 +2,8 @@
 #include <stdalign.h>
 
 #include "./core/types.h"
-#include "./planning/passes/flow.h"
-#include "./runtime/flow.h"
+#include "./planning/passes/passes.h"
+#include "./planning/passes/val_schedule.h"
 #include "./core/memory/stack.h"
 
 // TODO: return error.
@@ -25,7 +25,6 @@ void plus_fn_native_impl(
 int main(void) {
   LF_Type plus_fn_arg_types[] = { LF_INT, LF_INT };
   char *plus_fn_arg_names[] = { "fst", "snd" };
-
   LF_FuncDefSpec plus_fn_def = {
     .arg_types = plus_fn_arg_types,
     .arg_names = plus_fn_arg_names,
@@ -66,18 +65,12 @@ int main(void) {
     .inner_val = &plus_fn
   };
 
-  LF_Flow flow;
-  lf_init_flow(&flow, &parent_plus_fn_call);
-  lf_eval_flow(&flow);
-
-  LF_Logger logger = {
-    .time_fmt = NULL,
-    .min_level = LF_INFO,
-    .is_colored = true
-  };
-  lf_init_logger(&logger);
-  int res = (*((LF_Value **)lf_pop_from_stack(&flow.frame_vals)))->as_int;
-  lf_log_info(&logger, "res = %d", res);
+  LF_PassPipeline pipeline;
+  pipeline.logger.min_level = LF_DEBUG;
+  pipeline.logger.time_fmt = NULL;
+  lf_init_pass_pipeline(&pipeline, &parent_plus_fn_call);
+  lf_build_pass(&pipeline, "val_schedule", lf_build_val_schedule);
+  lf_process_pass_pipeline(&pipeline);
 
   return 0;
 }

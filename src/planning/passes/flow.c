@@ -1,5 +1,4 @@
 #include "./flow.h"
-#include "./val_schedule.h"
 
 void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
   assert(flow);
@@ -11,7 +10,7 @@ void lf_init_flow(LF_Flow *flow, LF_Value *entrypoint) {
 
   lf_log_debug(&flow->logger, "beg init flow [flow=%x]", flow);
 
-  lf_build_val_schedule(flow, entrypoint);
+  // lf_build_val_schedule(flow, entrypoint);
 
   flow->frame_vals.elem_qtt_in_block = (
     LF_FLOW_FRAME_VAL_QTT_IN_BLOCK * sizeof(LF_Value *)

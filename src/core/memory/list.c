@@ -18,7 +18,7 @@ void lf_init_list(LF_List *list) {
   lf_init_arena(&list->arena);
 }
 
-char *lf_alloc_list_elem(LF_List *list, size_t qtt) {
+char *lf_alloc_list_elems(LF_List *list, size_t qtt) {
   assert(list);
   assert(qtt > 0);
 
@@ -27,6 +27,10 @@ char *lf_alloc_list_elem(LF_List *list, size_t qtt) {
   list->elem_count += qtt;
 
   return elem;
+}
+
+char *lf_alloc_list_elem(LF_List *list) {
+  return lf_alloc_list_elems(list, 1);
 }
 
 void lf_reset_list(LF_List *list) {
