@@ -26,5 +26,14 @@ jobs:
       - name: Build tests
         run: make tests
 
+      - name: Generate test seed
+        run: |
+          # From munit's help:
+          #
+          # Must be a 32-bit integer in decimal notation with no
+          # separators (commas, decimals, spaces, etc.), or hexidecimal
+          # prefixed by "0x".
+          echo "TEST_SEED=$((RANDOM << 16 | RANDOM))" >> $GITHUB_ENV
+
       - name: Run tests
-        run: ./bin/tests/dbg/tests --seed ${{ github.run_id }}
+        run: ./bin/tests/dbg/tests --seed "$TEST_SEED"
