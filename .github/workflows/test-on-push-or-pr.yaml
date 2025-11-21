@@ -34,6 +34,7 @@ jobs:
           # separators (commas, decimals, spaces, etc.), or hexidecimal
           # prefixed by "0x".
           echo "TEST_SEED=$((RANDOM << 16 | RANDOM))" >> $GITHUB_ENV
+          echo "Seed generated: $TEST_SEED"
 
       - name: Run tests
         run: ./bin/tests/dbg/tests --seed "$TEST_SEED"
