@@ -14,7 +14,9 @@ typedef struct LF_List {
 
 void lf_init_list(LF_List *list);
 
-char *lf_alloc_list_elem(LF_List *list, size_t qtt);
+char *lf_alloc_list_elems(LF_List *list, size_t qtt);
+
+char *lf_alloc_list_elem(LF_List *list);
 
 void lf_reset_list(LF_List *list);
 

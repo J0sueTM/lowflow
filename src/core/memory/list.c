@@ -18,7 +18,7 @@ void lf_init_list(LF_List *list) {
   lf_init_arena(&list->arena);
 }
 
-char *lf_alloc_list_elem(LF_List *list, size_t qtt) {
+char *lf_alloc_list_elems(LF_List *list, size_t qtt) {
   assert(list);
   assert(qtt > 0);
 
@@ -27,6 +27,10 @@ char *lf_alloc_list_elem(LF_List *list, size_t qtt) {
   list->elem_count += qtt;
 
   return elem;
+}
+
+char *lf_alloc_list_elem(LF_List *list) {
+  return lf_alloc_list_elems(list, 1);
 }
 
 void lf_reset_list(LF_List *list) {
@@ -152,6 +156,10 @@ char *lf_get_prev_list_elem(LF_List *list, char *elem) {
 
 char *lf_get_first_list_elem(LF_List *list) {
   assert(list);
+
+  if (list->elem_count <= 0) {
+    return NULL;
+  }
 
   list->arena.cursor_block = list->arena.head_block;
   return list->arena.head_block->data;
