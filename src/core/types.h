@@ -1,30 +1,32 @@
 #ifndef LF_TYPES_H
 #define LF_TYPES_H
 
-#include <stdbool.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <stdalign.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #include "./memory/stack.h"
 
 typedef enum LF_Type {
-  LF_INT       = 1 << 0,
-  LF_FLOAT     = 1 << 1,
-  LF_CHAR      = 1 << 2,
-  LF_STR       = 1 << 3,
-  LF_BOOL      = 1 << 4,
-  LF_SYMBOL    = 1 << 5,
-  LF_LIST      = 1 << 6,
-  LF_SEQ       = 1 << 7,
-  LF_DICT      = 1 << 8,
-  LF_FUNC_DEF  = 1 << 9,
+  LF_INT = 1 << 0,
+  LF_FLOAT = 1 << 1,
+  LF_CHAR = 1 << 2,
+  LF_STR = 1 << 3,
+  LF_BOOL = 1 << 4,
+  LF_SYMBOL = 1 << 5,
+  LF_LIST = 1 << 6,
+  LF_SEQ = 1 << 7,
+  LF_DICT = 1 << 8,
+  LF_FUNC_DEF = 1 << 9,
   LF_FUNC_CALL = 1 << 10,
-  LF_TYPE      = 1 << 11,
-  LF_TRAIT     = 1 << 12
+  LF_TYPE = 1 << 11,
+  LF_TRAIT = 1 << 12
 } LF_Type;
 
-#define PRIMITIVE_MASK (LF_INT | LF_FLOAT | LF_CHAR | LF_STR | LF_BOOL | LF_FUNC_DEF | LF_TYPE | LF_TRAIT)
+#define PRIMITIVE_MASK                                                      \
+  (LF_INT | LF_FLOAT | LF_CHAR | LF_STR | LF_BOOL | LF_FUNC_DEF | LF_TYPE | \
+   LF_TRAIT)
 
 typedef struct LF_Value LF_Value;
 

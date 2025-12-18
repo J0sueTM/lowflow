@@ -18,6 +18,10 @@ char *lf_alloc_list_elems(LF_List *list, size_t qtt);
 
 char *lf_alloc_list_elem(LF_List *list);
 
+char *lf_alloc_head_list_elem(LF_List *list);
+
+char *lf_alloc_tail_list_elem(LF_List *list);
+
 void lf_reset_list(LF_List *list);
 
 char *lf_get_next_list_elem(LF_List *list, char *elem);
@@ -27,7 +31,5 @@ char *lf_get_prev_list_elem(LF_List *list, char *elem);
 char *lf_get_first_list_elem(LF_List *list);
 
 char *lf_get_last_list_elem(LF_List *list);
-
-char *lf_get_list_elem_by_pos(LF_List *list, size_t pos);
 
 #endif

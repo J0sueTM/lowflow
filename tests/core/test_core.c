@@ -3,7 +3,7 @@
 
 static MunitSuite core_inner_test_suites[] = {
   memory_test_suite,
-  { 0 },
+  {0},
 };
 
 static const MunitSuite core_test_suite = {
@@ -11,5 +11,5 @@ static const MunitSuite core_test_suite = {
   .tests = NULL,
   .suites = core_inner_test_suites,
   .iterations = 1,
-  .options = MUNIT_SUITE_OPTION_NONE
+  .options = MUNIT_SUITE_OPTION_NONE,
 };

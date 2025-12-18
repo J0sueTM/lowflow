@@ -58,3 +58,12 @@ project 'tests'
   filter 'configurations:rel'
     defines { 'NDEBUG' }
     optimize 'On'
+
+newaction {
+  trigger = "format",
+  description = "Run clang-format on all source files",
+  execute = function ()
+    os.execute('find -type f -name *.h | xargs clang-format -i')
+    os.execute('find -type f -name *.c | xargs clang-format -i')
+  end
+}

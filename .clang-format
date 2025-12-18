@@ -1,0 +1,28 @@
+BasedOnStyle: Google
+
+# Core look
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+ColumnLimit: 80
+
+BinPackParameters: false
+BinPackArguments: false
+AlignAfterOpenBracket: Align
+AllowAllArgumentsOnNextLine: false
+
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakString: 1
+
+ContinuationIndentWidth: 2
+
+SpacesBeforeTrailingComments: 1
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+
+PointerAlignment: Right
+
+IncludeBlocks: Regroup
+SortIncludes: true
+
+IndentPPDirectives: None

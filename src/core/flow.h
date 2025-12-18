@@ -1,10 +1,10 @@
 #ifndef LF_FLOW
 #define LF_FLOW
 
-#include "./types.h"
+#include "./logger.h"
 #include "./memory/list.h"
 #include "./memory/stack.h"
-#include "./logger.h"
+#include "./types.h"
 
 typedef struct LF_Flow {
   LF_Logger logger;
