@@ -1,0 +1,39 @@
+name: test-on-push-or-pr
+on:
+  push:
+    branches: main
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: true
+
+      - name: Build makefiles with premake
+        uses: eariassoto/setup-premake@v1
+        with:
+          version: '5.0.0-beta1'
+          action: 'gmake'
+          options: '--cc=gcc'
+
+      - name: Install GCC
+        uses: egor-tensin/setup-gcc@v1
+        with:
+          version: latest
+          platform: x64
+
+      - name: Build tests
+        run: make tests
+
+      - name: Run tests
+        run: |
+          # From munit's help:
+          #
+          # Must be a 32-bit integer in decimal notation with no
+          # separators (commas, decimals, spaces, etc.), or hexidecimal
+          # prefixed by "0x".
+          TEST_SEED=$((RANDOM << 16 | RANDOM))
+          echo "Seed generated: $TEST_SEED"
+          ./bin/tests/dbg/tests --seed "$TEST_SEED"
