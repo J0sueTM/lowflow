@@ -3,7 +3,7 @@
 void lf_eval_flow(LF_Flow *flow) {
   assert(flow);
 
-  lf_log_debug(&flow->logger, "beg eval flow [flow=%x]", flow);
+  lf_log_debug(&flow->logger, "eval_flow: beg. flow=%x", flow);
 
   LF_Value **cur_val = (LF_Value **)lf_get_first_list_elem(&flow->val_schedule);
   while (cur_val) {
@@ -35,10 +35,9 @@ void lf_eval_flow(LF_Flow *flow) {
         size_t frame_val_qtt = flow->frame_vals.elem_count;
         if (frame_val_qtt < func_arg_qtt) {
           lf_log_fatal(&flow->logger,
-                       "eval flow: not enough vals in "
-                       "frame for func "
-                       "call [flow=%x, "
-                       "expected=%d, got=%d]",
+                       "eval_flow: not enough vals in frame for func call. "
+                       "flow=%x, "
+                       "expected=%d, got=%d",
                        flow,
                        func_arg_qtt,
                        frame_val_qtt);
@@ -67,5 +66,5 @@ void lf_eval_flow(LF_Flow *flow) {
   }
 
 finish_eval:
-  lf_log_debug(&flow->logger, "end eval flow [flow=%x]", flow);
+  lf_log_debug(&flow->logger, "eval_flow: end. flow=%x", flow);
 }

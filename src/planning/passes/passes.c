@@ -14,14 +14,20 @@ void lf_init_pass_pipeline(LF_PassPipeline *pipeline, LF_Value *entrypoint) {
   lf_init_list(&pipeline->passes);
 
   pipeline->val_schedule.elem_size = sizeof(LF_Value *);
-  pipeline->val_schedule.elem_qtt_in_block = 1;
   pipeline->val_schedule.elem_alignment = alignof(LF_Value *);
+  pipeline->val_schedule.elem_qtt_in_block =
+    LF_PASS_PIPELINE_VAL_SCHEDULE_QTT_IN_BLOCK;
   lf_init_stack(&pipeline->val_schedule);
+
+  pipeline->flows.elem_size = sizeof(LF_Value *);
+  pipeline->flows.elem_alignment = alignof(LF_Value *);
+  pipeline->flows.elem_qtt_in_block = LF_PASS_PIPELINE_FLOW_QTT_IN_BLOCK;
+  lf_init_list(&pipeline->flows);
 }
 
-LF_Pass *lf_append_pass(LF_PassPipeline *pipeline,
-                        const char *name,
-                        void (*apply_fn)(LF_PassPipeline *pipeline)) {
+LF_Pass *lf_push_pass(LF_PassPipeline *pipeline,
+                      const char *name,
+                      void (*apply_fn)(LF_PassPipeline *pipeline)) {
   assert(pipeline);
   assert(name);
   assert(apply_fn);

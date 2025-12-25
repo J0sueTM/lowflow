@@ -212,6 +212,10 @@ void lf_dealloc_arena(LF_Arena *arena) {
   }
 }
 
+bool lf_is_block_empty(LF_MemBlock *block) {
+  return block->left_offset == block->right_offset;
+}
+
 // TODO: This implements a very naive O(n) search. It
 // iterates over the entire arena, and compares bytes one by
 // one. This is bad. There are countless optimizations that
@@ -263,9 +267,9 @@ char *lf_get_arena_elem_by_content(LF_Arena *arena,
       // identical bit patterns (e.g., tagged or segmented
       // memory).
       bool is_byte_sized = elem_size == sizeof(void *);
-      bool bytes_match =
-        (is_byte_sized ? *(char **)cur_char == *(char **)content
-                       : memcmp(cur_char, content, elem_size) == 0);
+      bool bytes_match = is_byte_sized
+                           ? *(char **)cur_char == *(char **)content
+                           : memcmp(cur_char, content, elem_size) == 0;
       if (bytes_match) {
         return cur_char;
       }

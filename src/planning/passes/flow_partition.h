@@ -1,6 +1,13 @@
 #ifndef LF_PLANNING_PASS_FLOW_PARTITION
 #define LF_PLANNING_PASS_FLOW_PARTITION
 
-void flow_partition_foobar();
+#include "../../core/flow.h"
+#include "./passes.h"
+
+#ifndef LF_PASS_FLOW_PARTITION_FLOW_QTT_IN_BLOCK
+#define LF_PASS_FLOW_PARTITION_FLOW_QTT_IN_BLOCK 256
+#endif
+
+void lf_partition_flows(LF_PassPipeline *pipeline);
 
 #endif

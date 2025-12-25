@@ -16,16 +16,12 @@ void lf_build_val_schedule(LF_PassPipeline *pipeline) {
     .elem_qtt_in_block = pipeline->val_schedule.elem_qtt_in_block,
   };
   lf_init_stack(&vals_to_visit);
+
   LF_Value **entrypoint_val = (LF_Value **)lf_alloc_stack_elem(&vals_to_visit);
   *entrypoint_val = pipeline->entrypoint;
 
   while (!lf_is_stack_empty(&vals_to_visit)) {
-    LF_Value **tmp_cur_val = (LF_Value **)lf_pop_from_stack(&vals_to_visit);
-    // NOTE: Future (*tmp_cur_val) wouldn't work because it
-    // will be overwritten at the next stack push. That's
-    // why we get the pointer back into another variable, so
-    // we don't lose it.
-    LF_Value *cur_val = *tmp_cur_val;
+    LF_Value *cur_val = *(LF_Value **)lf_pop_from_stack(&vals_to_visit);
 
     bool already_scheduled =
       (bool)lf_get_stack_elem_by_content(&pipeline->val_schedule,

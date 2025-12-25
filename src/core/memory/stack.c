@@ -13,14 +13,14 @@ void lf_init_stack(LF_Stack *stack) {
 
   stack->arena.block_size =
     (stack->elem_qtt_in_block * stack->elem_padded_size);
-  stack->arena.block_offset = LF_MEMBLOCK_OFFSET_LEFT;
+  stack->arena.block_offset = LF_MEMBLOCK_OFFSET_RIGHT;
   lf_init_arena(&stack->arena);
 }
 
 char *lf_alloc_stack_elem(LF_Stack *stack) {
   assert(stack);
 
-  char *elem = lf_arena_alloc_at_tail(&stack->arena, stack->elem_size);
+  char *elem = lf_arena_alloc_at_head(&stack->arena, stack->elem_size);
   ++stack->elem_count;
 
   return elem;
@@ -40,19 +40,22 @@ char *lf_pop_from_stack(LF_Stack *stack) {
   }
 
   LF_Arena *arena = &stack->arena;
-  LF_MemBlock *tail_block = arena->tail_block;
-  bool is_block_empty = tail_block->right_offset == 0;
-  if (is_block_empty) {
-    tail_block = lf_dealloc_arena_tail_block(arena);
+  LF_MemBlock *head_block = arena->head_block;
+  if (lf_is_block_empty(head_block)) {
+    head_block = lf_dealloc_arena_head_block(arena);
   }
 
-  size_t new_right_offset = tail_block->right_offset - stack->elem_padded_size;
-  if (new_right_offset <= tail_block->left_offset) {
-    tail_block->left_offset = new_right_offset;
+  size_t new_left_offset = head_block->left_offset + stack->elem_padded_size;
+  // This prevents phantom data from showing up if somehow
+  // offsets don't align and when popping, the left offset
+  // goes beyond the right offset.
+  if (new_left_offset > head_block->right_offset) {
+    head_block->right_offset = new_left_offset;
   }
-  tail_block->right_offset = new_right_offset;
 
-  char *elem = tail_block->data + new_right_offset;
+  char *elem = head_block->data + head_block->left_offset;
+
+  head_block->left_offset = new_left_offset;
   --stack->elem_count;
 
   return elem;

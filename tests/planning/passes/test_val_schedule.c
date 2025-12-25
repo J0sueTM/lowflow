@@ -66,12 +66,14 @@ static MunitResult test_build_val_schedule__success(
 }
 
 static MunitTest val_schedule_pass_tests[] = {
-  {.name = "/build",
-   .test = test_build_val_schedule__success,
-   .setup = NULL,
-   .tear_down = NULL,
-   .options = MUNIT_TEST_OPTION_NONE,
-   .parameters = NULL},
+  {
+    .name = "/build",
+    .test = test_build_val_schedule__success,
+    .setup = NULL,
+    .tear_down = NULL,
+    .options = MUNIT_TEST_OPTION_NONE,
+    .parameters = NULL,
+  },
   {0},
 };
 

@@ -60,6 +60,8 @@ void lf_reset_arena(LF_Arena *arena);
 
 void lf_dealloc_arena(LF_Arena *arena);
 
+bool lf_is_block_empty(LF_MemBlock *block);
+
 // Assumes same sized elements.
 char *lf_get_arena_elem_by_content(LF_Arena *arena,
                                    char *content,

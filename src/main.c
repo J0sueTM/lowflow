@@ -2,6 +2,7 @@
 
 #include "./core/memory/stack.h"
 #include "./core/types.h"
+#include "./planning/passes/flow_partition.h"
 #include "./planning/passes/passes.h"
 #include "./planning/passes/val_schedule.h"
 
@@ -65,7 +66,8 @@ int main(void) {
   pipeline.logger.min_level = LF_DEBUG;
   pipeline.logger.time_fmt = NULL;
   lf_init_pass_pipeline(&pipeline, &parent_plus_fn_call);
-  lf_append_pass(&pipeline, "val_schedule", lf_build_val_schedule);
+  lf_push_pass(&pipeline, "val_schedule", lf_build_val_schedule);
+  lf_push_pass(&pipeline, "flow_partition", lf_partition_flows);
   lf_process_pass_pipeline(&pipeline);
 
   return 0;

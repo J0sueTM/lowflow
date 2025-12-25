@@ -15,8 +15,8 @@ static MunitResult test_pass_pipeline__success(const MunitParameter params[],
 
   LF_PassPipeline pipeline;
   lf_init_pass_pipeline(&pipeline, &dumb_value);
-  lf_append_pass(&pipeline, "fst_pass", _pass_fn__change_val_schedule);
-  lf_append_pass(&pipeline, "snd_pass", _pass_fn__change_val_schedule);
+  lf_push_pass(&pipeline, "fst_pass", _pass_fn__change_val_schedule);
+  lf_push_pass(&pipeline, "snd_pass", _pass_fn__change_val_schedule);
 
   lf_process_pass_pipeline(&pipeline);
 
@@ -26,7 +26,7 @@ static MunitResult test_pass_pipeline__success(const MunitParameter params[],
 }
 
 static MunitTest pass_pipeline_tests[] = {
-  {.name = "/pipeline/sucess",
+  {.name = "/pipeline/success",
    .test = test_pass_pipeline__success,
    .setup = NULL,
    .tear_down = NULL,

@@ -11,4 +11,5 @@ static const MunitSuite planning_test_suite = {
   .tests = NULL,
   .suites = planning_inner_test_suites,
   .iterations = 1,
-  .options = MUNIT_SUITE_OPTION_NONE};
+  .options = MUNIT_SUITE_OPTION_NONE,
+};

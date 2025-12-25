@@ -91,18 +91,23 @@ static MunitTest arena_tests[] = {{
                                     .options = MUNIT_TEST_OPTION_NONE,
                                     .parameters = NULL,
                                   },
-                                  {"/alloc/initial_block",
-                                   test_arena_alloc_in_initial_block,
-                                   NULL,
-                                   NULL,
-                                   MUNIT_TEST_OPTION_NONE,
-                                   NULL},
-                                  {"/alloc/multiple_blocks",
-                                   test_arena_alloc_in_multiple_blocks,
-                                   NULL,
-                                   NULL,
-                                   MUNIT_TEST_OPTION_NONE,
-                                   NULL}};
+                                  {
+                                    "/alloc/initial_block",
+                                    test_arena_alloc_in_initial_block,
+                                    NULL,
+                                    NULL,
+                                    MUNIT_TEST_OPTION_NONE,
+                                    NULL,
+                                  },
+                                  {
+                                    "/alloc/multiple_blocks",
+                                    test_arena_alloc_in_multiple_blocks,
+                                    NULL,
+                                    NULL,
+                                    MUNIT_TEST_OPTION_NONE,
+                                    NULL,
+                                  },
+                                  {0}};
 
 static const MunitSuite arena_test_suite = {
   .prefix = "/arena",
