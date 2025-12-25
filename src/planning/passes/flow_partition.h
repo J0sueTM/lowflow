@@ -2,6 +2,7 @@
 #define LF_PLANNING_PASS_FLOW_PARTITION
 
 #include "../../core/flow.h"
+#include "../../core/memory/adapters.h"
 #include "./passes.h"
 
 #ifndef LF_PASS_FLOW_PARTITION_FLOW_QTT_IN_BLOCK

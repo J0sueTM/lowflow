@@ -67,7 +67,10 @@ int main(void) {
   pipeline.logger.time_fmt = NULL;
   lf_init_pass_pipeline(&pipeline, &parent_plus_fn_call);
   lf_push_pass(&pipeline, "val_schedule", lf_build_val_schedule);
+
+  pipeline.flow_partition_strategy = LF_FLOW_PARTITION_STRATEGY_NONE;
   lf_push_pass(&pipeline, "flow_partition", lf_partition_flows);
+
   lf_process_pass_pipeline(&pipeline);
 
   return 0;
