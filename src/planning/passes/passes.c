@@ -40,8 +40,9 @@ LF_Pass *lf_push_pass(LF_PassPipeline *pipeline,
   pass->name.char_qtt_in_block = name_padded_size;
   lf_init_string(&pass->name);
   char *pass_name = lf_alloc_string(&pass->name, name_padded_size);
-  strncpy(pass_name, name, name_size);
-  pass_name[name_size] = '\0';
+
+  // This assumes that `name` is a null terminated string. 
+  strncpy(pass_name, name, name_padded_size);
 
   return pass;
 }
@@ -55,7 +56,7 @@ void lf_process_pass_pipeline(LF_PassPipeline *pipeline) {
     lf_log_debug(&pipeline->logger,
                  "process_pass_pipeline: begin pass. "
                  "pipeline=%p "
-                 "pass=%p pass_name=%s",
+                 "pass=%p pass=%s",
                  pipeline,
                  cur_pass,
                  lf_string_to_cstr(&cur_pass->name));
@@ -65,7 +66,7 @@ void lf_process_pass_pipeline(LF_PassPipeline *pipeline) {
     lf_log_debug(&pipeline->logger,
                  "process_pass_pipeline: end pass. "
                  "pipeline=%p "
-                 "pass=%p pass_name=%s",
+                 "pass=%p name=%s",
                  pipeline,
                  cur_pass,
                  lf_string_to_cstr(&cur_pass->name));

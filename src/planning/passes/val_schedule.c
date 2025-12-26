@@ -44,7 +44,7 @@ void lf_build_val_schedule(LF_PassPipeline *pipeline) {
     for (size_t i = 0; i < arg_qtt; ++i) {
       LF_Value **arg_val_to_visit =
         (LF_Value **)lf_alloc_stack_elem(&vals_to_visit);
-      *arg_val_to_visit = &cur_val->func_call_spec->args[i];
+      *arg_val_to_visit = cur_val->func_call_spec->args[i];
     }
   }
 

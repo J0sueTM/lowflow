@@ -38,7 +38,7 @@ static MunitResult test_build_val_schedule__success(
   LF_Value int_4 = {.type = LF_INT, .as_int = 4};
   LF_Value int_2 = {.type = LF_INT, .as_int = 2};
 
-  LF_Value plus_fn_call_args[] = {int_4, int_2};
+  LF_Value *plus_fn_call_args[] = {&int_4, &int_2};
   LF_FuncCallSpec plus_fn_call_spec = {
     .args = plus_fn_call_args,
   };

@@ -55,7 +55,7 @@ typedef struct LF_FuncDefSpec {
 } LF_FuncDefSpec;
 
 typedef struct LF_FuncCallSpec {
-  LF_Value *args;
+  LF_Value **args;
 } LF_FuncCallSpec;
 
 typedef struct LF_TraitSpec {

@@ -28,12 +28,6 @@ void lf_partition_flows(LF_PassPipeline *pipeline) {
 
   LF_Flow *parent_flow = (LF_Flow *)lf_alloc_list_elem(&flows);
 
-  parent_flow->logger.min_level = LF_FLOW_LOGGER_MIN_LEVEL;
-  parent_flow->logger.time_fmt = NULL;
-  lf_init_logger(&parent_flow->logger);
-
-  parent_flow->val_schedule.elem_size = sizeof(LF_Value *);
-  parent_flow->val_schedule.elem_alignment = alignof(LF_Value *);
   switch (pipeline->flow_partition_strategy) {
     case LF_FLOW_PARTITION_STRATEGY_NONE:
       parent_flow->val_schedule.elem_qtt_in_block = pipeline->val_schedule.elem_qtt_in_block;
@@ -43,10 +37,7 @@ void lf_partition_flows(LF_PassPipeline *pipeline) {
       break;
   }
 
-  // TODO: Look into how memory is spreaded, in the future.
-  // There's no gain in using arenas if everything allocates
-  // stuffy everywhere.
-  lf_init_list(&parent_flow->val_schedule);
+  lf_init_flow(parent_flow);
 
   switch (pipeline->flow_partition_strategy) {
     case LF_FLOW_PARTITION_STRATEGY_NONE:

@@ -42,7 +42,7 @@ void lf_eval_flow(LF_Flow *flow) {
                        func_arg_qtt,
                        frame_val_qtt);
           // TODO: Stuff above the flow expects results.
-          // This should return an Option instead of stop
+          // This should return an Option instead of stopping
           // everything.
           goto finish_eval;
         }
