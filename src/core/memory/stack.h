@@ -24,4 +24,6 @@ bool lf_is_stack_empty(LF_Stack *stack);
 
 char *lf_get_stack_elem_by_content(LF_Stack *stack, char *content);
 
-#endif
+void lf_debug_stack(LF_Stack *stack, void(*debug_fn)(char *data));
+
+#endif // LF_STACK_H

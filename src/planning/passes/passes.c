@@ -41,7 +41,7 @@ LF_Pass *lf_push_pass(LF_PassPipeline *pipeline,
   lf_init_string(&pass->name);
   char *pass_name = lf_alloc_string(&pass->name, name_padded_size);
 
-  // This assumes that `name` is a null terminated string. 
+  // This assumes that `name` is a null terminated string.
   strncpy(pass_name, name, name_padded_size);
 
   return pass;

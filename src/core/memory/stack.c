@@ -75,3 +75,28 @@ char *lf_get_stack_elem_by_content(LF_Stack *stack, char *content) {
                                       stack->elem_size,
                                       stack->elem_padded_size);
 }
+
+void lf_debug_stack(LF_Stack *stack, void(*debug_fn)(char *data)) {
+  assert(stack);
+
+  LF_MemBlock *cur_block = stack->arena.head_block;
+  while (cur_block) {
+    size_t used_size = cur_block->right_offset - cur_block->left_offset;
+    bool is_empty = used_size <= 0;
+    if (is_empty) {
+      cur_block = cur_block->next;
+      continue;
+    }
+
+    for (
+      size_t i = cur_block->left_offset;
+      i <= cur_block->right_offset - stack->elem_padded_size;
+      i += stack->elem_padded_size
+    ) {
+      debug_fn(cur_block->data + i);
+    }
+    printf("\n");
+
+    cur_block = cur_block->next;
+  }
+}

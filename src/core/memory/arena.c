@@ -188,13 +188,9 @@ LF_MemBlock *lf_dealloc_arena_tail_block(LF_Arena *arena) {
 void lf_reset_arena(LF_Arena *arena) {
   assert(arena);
 
-  LF_MemBlock *head_block = arena->head_block;
-  _lf_set_block_offset(arena, arena->head_block);
-
-  LF_MemBlock *cur_block = head_block->next;
+  LF_MemBlock *cur_block = arena->head_block;
   while (cur_block) {
-    cur_block->left_offset = 0;
-    cur_block->right_offset = 0;
+    _lf_set_block_offset(arena, cur_block);
     cur_block = cur_block->next;
   }
 }

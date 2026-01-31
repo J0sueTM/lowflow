@@ -55,7 +55,7 @@ typedef struct LF_FuncDefSpec {
 } LF_FuncDefSpec;
 
 typedef struct LF_FuncCallSpec {
-  LF_Value **args;
+  LF_Value *func_def;
 } LF_FuncCallSpec;
 
 typedef struct LF_TraitSpec {
@@ -77,7 +77,7 @@ typedef struct LF_Value {
     LF_DictSpec *dict_spec;
     LF_FuncDefSpec *func_def_spec;
     LF_TraitSpec *trait_spec;
-    LF_FuncCallSpec *func_call_spec;
+    LF_FuncCallSpec func_call_spec;
     LF_SymbolSpec *symbol_spec;
   };
 
@@ -90,7 +90,12 @@ typedef struct LF_Value {
     char *as_byte_ptr;
     void *as_void_ptr;
     LF_Value *inner_val;
+    LF_Value **inner_vals;
   };
 } LF_Value;
+
+void lf_debug_value(LF_Value *val);
+
+void lf_debug_value_from_raw(char *data);
 
 #endif // LF_TYPES_H

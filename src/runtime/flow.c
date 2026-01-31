@@ -21,7 +21,7 @@ void lf_eval_flow(LF_Flow *flow) {
         // TODO: Maybe reuse old vals?
         LF_Value *new_res_val =
           (LF_Value *)lf_alloc_stack_elem(&flow->new_vals);
-        LF_Value *func_def = (*cur_val)->inner_val;
+        LF_Value *func_def = (*cur_val)->func_call_spec.func_def;
         if (!func_def->func_def_spec->native_impl) {
           lf_log_fatal(&flow->logger,
                        "eval flow: func has no native impl "

@@ -14,7 +14,7 @@ void lf_init_flow(LF_Flow *flow) {
 
   // TODO: Look into how memory is spreaded, in the future.
   // There's no gain in using arenas if everything allocates
-  // stuffy everywhere.
+  // stuff everywhere.
   lf_init_list(&flow->val_schedule);
 
   flow->frame_vals.elem_size = sizeof(LF_Value *);

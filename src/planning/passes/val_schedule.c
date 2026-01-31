@@ -22,14 +22,6 @@ void lf_build_val_schedule(LF_PassPipeline *pipeline) {
 
   while (!lf_is_stack_empty(&vals_to_visit)) {
     LF_Value *cur_val = *(LF_Value **)lf_pop_from_stack(&vals_to_visit);
-
-    bool already_scheduled =
-      (bool)lf_get_stack_elem_by_content(&pipeline->val_schedule,
-                                         (char *)&cur_val);
-    if (already_scheduled) {
-      continue;
-    }
-
     LF_Value **scheduled_val =
       (LF_Value **)lf_alloc_stack_elem(&pipeline->val_schedule);
     *scheduled_val = cur_val;
@@ -39,12 +31,12 @@ void lf_build_val_schedule(LF_PassPipeline *pipeline) {
       continue;
     }
 
-    // If not a leaf (primitive), it's a function.
-    size_t arg_qtt = cur_val->inner_val->func_def_spec->arg_qtt;
+    // If not a leaf (primitive), it's a function call.
+    size_t arg_qtt = cur_val->func_call_spec.func_def->func_def_spec->arg_qtt;
     for (size_t i = 0; i < arg_qtt; ++i) {
       LF_Value **arg_val_to_visit =
         (LF_Value **)lf_alloc_stack_elem(&vals_to_visit);
-      *arg_val_to_visit = cur_val->func_call_spec->args[i];
+      *arg_val_to_visit = cur_val->inner_vals[i];
     }
   }
 

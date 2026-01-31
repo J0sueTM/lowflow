@@ -21,6 +21,11 @@ void plus_fn_native_impl(LF_Value *out, LF_Stack *frame_vals) {
 }
 
 int main(void) {
+  // +(+(+(4, 5), 7), 7)
+  //       +
+  //     +   7
+  //   +   7
+  // 4   5
   LF_Type plus_fn_arg_types[] = {LF_INT, LF_INT};
   char *plus_fn_arg_names[] = {"fst", "snd"};
   LF_FuncDefSpec plus_fn_def = {
@@ -30,7 +35,6 @@ int main(void) {
     .ret_type = LF_INT,
     .native_impl = plus_fn_native_impl,
   };
-
   LF_Value plus_fn = {
     .type = LF_FUNC_DEF,
     .name = "+",
@@ -40,65 +44,30 @@ int main(void) {
   LF_Value int_4 = {.type = LF_INT, .as_int = 4};
   LF_Value int_5 = {.type = LF_INT, .as_int = 5};
 
-  LF_Value *bottom_plus_fn_call_args[] = {
-    &int_4,
-    &int_5,  
-  };
-  LF_FuncCallSpec bottom_plus_fn_call_spec = {
-    .args = bottom_plus_fn_call_args,
-  };
-  LF_Value bottom_plus_fn_call = {
+  LF_Value *left_plus_fn_call_args[] = {&int_4, &int_5};
+  LF_Value left_plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = &bottom_plus_fn_call_spec,
-    .inner_val = &plus_fn,
+    .func_call_spec = { .func_def = &plus_fn },
+    .inner_vals = left_plus_fn_call_args,
   };
 
   LF_Value int_7 = {.type = LF_INT, .as_int = 7};
 
-  LF_Value *fst_middle_plus_fn_call_args[] = {
-    &bottom_plus_fn_call,
-    &int_7,
-  };
-  LF_FuncCallSpec fst_middle_plus_fn_call_spec = {
-    .args = fst_middle_plus_fn_call_args
-  };
-  LF_Value fst_middle_plus_fn_call = {
+  LF_Value *middle_plus_fn_call_args[] = {&left_plus_fn_call, &int_7};
+  LF_Value middle_plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = &fst_middle_plus_fn_call_spec,
-    .inner_val = &plus_fn
+    .func_call_spec = { .func_def = &plus_fn },
+    .inner_vals = middle_plus_fn_call_args,
   };
-
-  LF_Value *middle_plus_fn_calls_args[100][2];
-
-  LF_FuncCallSpec middle_plus_fn_calls_specs[100];
-  LF_Value middle_plus_fn_calls[100];
-  for (size_t i = 0; i < 100; ++i) {
-    LF_Value **cur_call_args = middle_plus_fn_calls_args[i];
-    cur_call_args[0] = &int_7;
-    cur_call_args[1] = &fst_middle_plus_fn_call;
-
-    LF_FuncCallSpec *cur_call_spec = &middle_plus_fn_calls_specs[i];
-    cur_call_spec->args = cur_call_args;
-
-    LF_Value *cur_fn_call = &middle_plus_fn_calls[i];
-    cur_fn_call->type = LF_FUNC_CALL;
-    cur_fn_call->func_call_spec = cur_call_spec;
-    cur_fn_call->inner_val = &plus_fn;
-  }
-
-  LF_Value int_2 = {.type = LF_INT, .as_int = 2};
 
   LF_Value *parent_plus_fn_call_args[] = {
-    &middle_plus_fn_calls[99],
-    &int_2,
-  };
-  LF_FuncCallSpec parent_plus_fn_call_spec = {
-    .args = parent_plus_fn_call_args,
+    &middle_plus_fn_call,
+    &int_7,
   };
   LF_Value parent_plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = &parent_plus_fn_call_spec,
-    .inner_val = &plus_fn,
+    .func_call_spec = { .func_def = &plus_fn },
+    .inner_vals = parent_plus_fn_call_args,
   };
 
   LF_PassPipeline pipeline;
@@ -110,7 +79,9 @@ int main(void) {
   pipeline.flow_partition_strategy = LF_FLOW_PARTITION_STRATEGY_NONE;
   lf_push_pass(&pipeline, "flow_partition", lf_partition_flows);
 
-  lf_process_pass_pipeline(&pipeline);
+  // lf_process_pass_pipeline(&pipeline);
+
+  // lf_debug_stack(&pipeline.val_schedule, lf_debug_value_from_raw);
 
   lf_eval_flow(pipeline.parent_flow);
 
