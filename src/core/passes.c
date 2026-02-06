@@ -1,10 +1,7 @@
 #include "./passes.h"
 
-void lf_init_pass_pipeline(LF_PassPipeline *pipeline, LF_Value *entrypoint) {
+void lf_init_pass_pipeline(LF_PassPipeline *pipeline) {
   assert(pipeline);
-  assert(entrypoint);
-
-  pipeline->entrypoint = entrypoint;
 
   lf_init_logger(&pipeline->logger);
 

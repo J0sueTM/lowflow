@@ -45,8 +45,8 @@ static MunitResult test_build_val_schedule__success(
     .inner_vals = plus_fn_call_args,
   };
 
-  LF_PassPipeline pipeline;
-  lf_init_pass_pipeline(&pipeline, &plus_fn_call);
+  LF_PassPipeline pipeline = { .entrypoint = &plus_fn_call };
+  lf_init_pass_pipeline(&pipeline);
 
   lf_build_val_schedule(&pipeline);
 

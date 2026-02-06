@@ -3,7 +3,7 @@
 
 #include "../../core/flow.h"
 #include "../../core/memory/adapters.h"
-#include "./passes.h"
+#include "../../core/passes.h"
 
 #ifndef LF_PASS_FLOW_PARTITION_FLOW_QTT_IN_BLOCK
 #define LF_PASS_FLOW_PARTITION_FLOW_QTT_IN_BLOCK 256

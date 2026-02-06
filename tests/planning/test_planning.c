@@ -2,7 +2,7 @@
 #include "./passes/test_passes.c"
 
 static MunitSuite planning_inner_test_suites[] = {
-  passes_test_suite,
+  planning_passes_test_suite,
   {0},
 };
 

@@ -12,8 +12,9 @@ static MunitResult test_partition_flows__no_strategy(
 
   LF_PassPipeline pipeline = {
     .flow_partition_strategy = LF_FLOW_PARTITION_STRATEGY_NONE,
+    .entrypoint = dumb_values,
   };
-  lf_init_pass_pipeline(&pipeline, &dumb_values[0]);
+  lf_init_pass_pipeline(&pipeline);
 
   for (int i = 0; i < 6; ++i) {
     LF_Value *dumb_value = &dumb_values[i];

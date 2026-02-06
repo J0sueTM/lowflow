@@ -1,10 +1,10 @@
 #ifndef LF_PLANNING_PASSES
 #define LF_PLANNING_PASSES
 
-#include "../../core/flow.h"
-#include "../../core/logger.h"
-#include "../../core/memory/list.h"
-#include "../../core/types.h"
+#include "./flow.h"
+#include "./logger.h"
+#include "./memory/list.h"
+#include "./types.h"
 
 #ifndef LF_PASS_PIPELINE_PASS_QTT
 #define LF_PASS_PIPELINE_PASS_QTT 4
@@ -35,7 +35,7 @@ typedef struct LF_Pass {
   void (*apply_fn)(LF_PassPipeline *pipeline);
 } LF_Pass;
 
-void lf_init_pass_pipeline(LF_PassPipeline *pipeline, LF_Value *entrypoint);
+void lf_init_pass_pipeline(LF_PassPipeline *pipeline);
 
 LF_Pass *lf_push_pass(LF_PassPipeline *pipeline,
                       const char *name,

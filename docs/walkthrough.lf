@@ -1,38 +1,70 @@
 ;; This is a comment.
 
-Person :: Struct = { :name Str, :age Int }
+import core/effects/io
 
-can-drive-msg (p Person) :: Str =>
-  if >=(p:age, 18)
-  then "You can drive!"
-  else "You can't drive yet."
+type Person :: Struct = { :name Str, :age Int }
 
-Driver :: Struct = { ..Driver, :can-drive? Bool }
+func can-drive? :: (p Person) Bool = p:age >= 18
 
-driver-names (drivers [Driver]) :: [Str] =>
-  map( #(driver [Driver]) => driver:name, drivers )
+func can-drive-msg :: (p Person) Str = {
+  good-msg :: Str = "You can drive!"
+  bad-msg :: Str = "You can't drive!"
+  if can-drive?(p)
+    then good-msg
+    else bad-msg
+}
 
-oldest-driver (drivers [Driver]) :: Driver =>
-  reduce(
-    #(_, fst Driver, snd Driver) =>
-      if >=(fst:age, snd:age) then fst else snd
+type Driver :: Struct(Person) = { :can-drive? Bool }
+
+func get-driver-names :: (drivers [Driver]) [Str] = {
+  map( #(driver Driver) = driver:name, drivers )
+}
+
+func get-oldest-driver :: (drivers [Driver]) Driver = {
+  comparer-fn :: (_, fst Driver, snd Driver) Driver =
+    if fst:age >= snd:age then fst else snd
+  list:reduce( drivers, comparer-fn )
+}
+
+func get-drivers-by-age (drivers [Driver]) :: {Int#Driver} = {
+  list:reduce(
+    #(drivers-by-age {Int#Driver}, cur-driver Driver) {Int#Driver}(drivers-by-age)
+      = let
+          cur-age     cur-driver:age,
+          cur-drivers drivers-by-age:cur-age
+          new-drivers append(cur-drivers, driver)
+        in {
+          dict:set(drivers-by-age, cur-age, new-drivers)
+        }
   , drivers
   )
+}
 
-drivers-by-age (drivers [Driver]) :: {Int#Driver} =>
-  reduce(
-    #(drivers-by-age {Int#Driver}, driver Driver)
-      => let
-           cur-age     driver:age,
-           cur-drivers drivers-by-age:cur-age
-           new-drivers append(cur-drivers, driver)
-         in @>(drivers-by-age, new-drivers)
-  , drivers
-  )
+entry main :: () () (io:StdOut!) {
+  person = Person { :age 18, :name "John Doe" }
+  msg = can-drive-msg(person)
 
-main () :: Cluster =>
-  [ can-drive-msg
-  , driver-names
-  , oldest-driver
-  , drivers-by-age
+  fst_driver = Driver {
+    ..person
+  , :can-drive? can-drive?(person)
+  }
+  drivers = [
+    fst_driver
+  , Driver {
+      :age 7
+    , :name "John Kid"
+    , :can-drive? false
+    }
+  , Driver {
+      :age 20,
+    , :name "John Other"
+    , :can-drive? true
+    }
+  ,
   ]
+  driver-names = get-driver-names(drivers)
+  oldest-driver = get-oldest-driver(drivers)
+  drivers-by-age = get-drivers-by-age(drivers)
+
+  str:format("can-drive-msg=%s oldest-driver-name%s", msg, oldest-driver:name)
+}
