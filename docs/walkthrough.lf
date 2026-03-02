@@ -40,7 +40,7 @@ func get-drivers-by-age (drivers [Driver]) :: {Int#Driver} = {
   )
 }
 
-entry main :: () () (io:StdOut!) {
+entry main :: () () (io:StdOut!) = {
   person = Person { :age 18, :name "John Doe" }
   msg = can-drive-msg(person)
 
@@ -66,5 +66,5 @@ entry main :: () () (io:StdOut!) {
   oldest-driver = get-oldest-driver(drivers)
   drivers-by-age = get-drivers-by-age(drivers)
 
-  str:format("can-drive-msg=%s oldest-driver-name%s", msg, oldest-driver:name)
+  str:format("can-drive-msg=%s oldest-driver-name=%s", msg, oldest-driver:name)
 }

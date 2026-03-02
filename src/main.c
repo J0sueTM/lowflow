@@ -5,8 +5,6 @@
 #include "./planning/passes/flow_partition.h"
 #include "./core/passes.h"
 #include "./planning/passes/val_schedule.h"
-#include "./runtime/flow.h"
-#include "compiler/passes/lexing.h"
 
 // TODO: return error.
 void plus_fn_native_impl(LF_Value *out, LF_Stack *frame_vals) {
@@ -77,7 +75,6 @@ int main(void) {
   pipeline.entrypoint = &parent_plus_fn_call;
   pipeline.flow_partition_strategy = LF_FLOW_PARTITION_STRATEGY_NONE;
   lf_init_pass_pipeline(&pipeline);
-  lf_push_pass(&pipeline, "lexing", lf_lex);
   lf_push_pass(&pipeline, "val_schedule", lf_build_val_schedule);
   lf_push_pass(&pipeline, "flow_partition", lf_partition_flows);
   lf_process_pass_pipeline(&pipeline);

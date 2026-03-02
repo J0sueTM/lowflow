@@ -20,7 +20,7 @@ char *lf_alloc_list_elems(LF_List *list, size_t qtt) {
   assert(list);
   assert(qtt > 0);
 
-  size_t total_size = qtt * list->elem_size;
+  size_t total_size = qtt * list->elem_padded_size;
   char *elem = lf_arena_alloc_at_tail(&list->arena, total_size);
   list->elem_count += qtt;
 

@@ -16,8 +16,6 @@ char *lf_alloc_string(LF_String *str, size_t size);
 
 void lf_reset_string(LF_String *str);
 
-char *lf_get_string_start(LF_String *str);
-
 char *lf_string_to_cstr(LF_String *str);
 
 #endif // LF_STRING_H
