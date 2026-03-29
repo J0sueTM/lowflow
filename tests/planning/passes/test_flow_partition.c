@@ -18,16 +18,19 @@ static MunitResult test_partition_flows__no_strategy(
 
   for (int i = 0; i < 6; ++i) {
     LF_Value *dumb_value = &dumb_values[i];
-    LF_Value **scheduled_val = (LF_Value **)lf_alloc_stack_elem(&pipeline.val_schedule);
+    LF_Value **scheduled_val =
+      (LF_Value **)lf_alloc_stack_elem(&pipeline.val_schedule);
     *scheduled_val = dumb_value;
   }
 
   lf_partition_flows(&pipeline);
 
-  LF_Value *fst_scheduled_val = *(LF_Value **)lf_get_first_list_elem(&pipeline.parent_flow->val_schedule);
+  LF_Value *fst_scheduled_val =
+    *(LF_Value **)lf_get_first_list_elem(&pipeline.parent_flow->val_schedule);
   munit_assert_ptr(&dumb_values[5], ==, fst_scheduled_val);
 
-  LF_Value *last_scheduled_val = *(LF_Value **)lf_get_last_list_elem(&pipeline.parent_flow->val_schedule);
+  LF_Value *last_scheduled_val =
+    *(LF_Value **)lf_get_last_list_elem(&pipeline.parent_flow->val_schedule);
   munit_assert_ptr(&dumb_values[0], ==, last_scheduled_val);
 
   return MUNIT_OK;

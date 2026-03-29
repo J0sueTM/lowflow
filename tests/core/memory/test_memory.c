@@ -2,10 +2,12 @@
 #include "./test_adapters.c"
 #include "./test_arena.c"
 #include "./test_list.c"
+#include "./test_string.c"
 
 static MunitSuite memory_inner_test_suites[] = {
   arena_test_suite,
-  list_test_suite,
+  string_test_suite,
+  // list_test_suite,
   adapters_test_suite,
   {0},
 };

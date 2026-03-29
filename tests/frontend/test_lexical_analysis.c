@@ -3,20 +3,31 @@
 #include "../../src/frontend/lexical_analysis.h"
 #include "../../vendor/munit/munit.h"
 
-static MunitResult test_lex_single_char_tokens(const MunitParameter params[], void *data) {
+static MunitResult test_lex_single_char_tokens(const MunitParameter params[],
+                                               void *data) {
   (void)params;
   (void)data;
 
   char *source = "=!/(){} = !";
-  LF_List tokens = { .elem_size = sizeof(LF_Token), .elem_alignment = alignof(LF_Token), .elem_qtt_in_block = 8 };
+  LF_List tokens = {.elem_size = sizeof(LF_Token),
+                    .elem_alignment = alignof(LF_Token),
+                    .elem_qtt_in_block = 8};
   lf_init_list(&tokens);
-  LF_String lexemes = { .char_qtt_in_block = 64 };
+  LF_String lexemes = {.char_qtt_in_block = 64};
   lf_init_string(&lexemes);
 
   lf_lex(&tokens, &lexemes, source, 11);
 
   munit_assert_size(tokens.elem_count, ==, 9);
-  LF_TokenType expected_token_types[] = {LF_TOKEN_IDENTIFIER, LF_TOKEN_SLASH, LF_TOKEN_PAREN_BEG, LF_TOKEN_PAREN_END, LF_TOKEN_BRACE_BEG, LF_TOKEN_BRACE_END, LF_TOKEN_EQUAL, LF_TOKEN_BANG, LF_TOKEN_EOF};
+  LF_TokenType expected_token_types[] = {LF_TOKEN_IDENTIFIER,
+                                         LF_TOKEN_SLASH,
+                                         LF_TOKEN_PAREN_BEG,
+                                         LF_TOKEN_PAREN_END,
+                                         LF_TOKEN_BRACE_BEG,
+                                         LF_TOKEN_BRACE_END,
+                                         LF_TOKEN_EQUAL,
+                                         LF_TOKEN_BANG,
+                                         LF_TOKEN_EOF};
   LF_Token *cur_token = (LF_Token *)lf_get_first_list_elem(&tokens);
   munit_assert_string_equal(cur_token->lexeme, "=!");
   for (int i = 0; i < 7; ++i) {
@@ -27,21 +38,27 @@ static MunitResult test_lex_single_char_tokens(const MunitParameter params[], vo
   return MUNIT_OK;
 }
 
-static MunitResult test_lex_keywords(const MunitParameter params[], void *data) {
+static MunitResult test_lex_keywords(const MunitParameter params[],
+                                     void *data) {
   (void)params;
   (void)data;
 
   char *source = "use entry func";
-  LF_List tokens = { .elem_size = sizeof(LF_Token), .elem_alignment = alignof(LF_Token), .elem_qtt_in_block = 8 };
+  LF_List tokens = {.elem_size = sizeof(LF_Token),
+                    .elem_alignment = alignof(LF_Token),
+                    .elem_qtt_in_block = 8};
   lf_init_list(&tokens);
-  LF_String lexemes = { .char_qtt_in_block = 64 };
+  LF_String lexemes = {.char_qtt_in_block = 64};
   lf_init_string(&lexemes);
 
   lf_lex(&tokens, &lexemes, source, 14);
 
   munit_assert_size(tokens.elem_count, ==, 4);
 
-  LF_TokenType expected_token_types[] = {LF_TOKEN_USE, LF_TOKEN_ENTRY, LF_TOKEN_FUNC, LF_TOKEN_EOF};
+  LF_TokenType expected_token_types[] = {LF_TOKEN_USE,
+                                         LF_TOKEN_ENTRY,
+                                         LF_TOKEN_FUNC,
+                                         LF_TOKEN_EOF};
   LF_Token *cur_token = (LF_Token *)lf_get_first_list_elem(&tokens);
   for (int i = 0; i < 4; ++i) {
     munit_assert_int(cur_token->type, ==, expected_token_types[i]);
@@ -51,14 +68,17 @@ static MunitResult test_lex_keywords(const MunitParameter params[], void *data) 
   return MUNIT_OK;
 }
 
-static MunitResult test_lex_identifier(const MunitParameter params[], void *data) {
+static MunitResult test_lex_identifier(const MunitParameter params[],
+                                       void *data) {
   (void)params;
   (void)data;
 
   char *source = "my_var";
-  LF_List tokens = { .elem_size = sizeof(LF_Token), .elem_alignment = alignof(LF_Token), .elem_qtt_in_block = 8 };
+  LF_List tokens = {.elem_size = sizeof(LF_Token),
+                    .elem_alignment = alignof(LF_Token),
+                    .elem_qtt_in_block = 8};
   lf_init_list(&tokens);
-  LF_String lexemes = { .char_qtt_in_block = 64 };
+  LF_String lexemes = {.char_qtt_in_block = 64};
   lf_init_string(&lexemes);
 
   lf_lex(&tokens, &lexemes, source, 6);
@@ -69,20 +89,24 @@ static MunitResult test_lex_identifier(const MunitParameter params[], void *data
   munit_assert_int(fst_token->type, ==, LF_TOKEN_IDENTIFIER);
   munit_assert_string_equal(fst_token->lexeme, "my_var");
 
-  LF_Token *snd_token = (LF_Token *)lf_get_next_list_elem(&tokens, (char *)fst_token);
+  LF_Token *snd_token =
+    (LF_Token *)lf_get_next_list_elem(&tokens, (char *)fst_token);
   munit_assert_int(snd_token->type, ==, LF_TOKEN_EOF);
 
   return MUNIT_OK;
 }
 
-static MunitResult test_lex_big_lexemes(const MunitParameter params[], void *data) {
+static MunitResult test_lex_big_lexemes(const MunitParameter params[],
+                                        void *data) {
   (void)params;
   (void)data;
 
   char *source = "= =identifier";
-  LF_List tokens = { .elem_size = sizeof(LF_Token), .elem_alignment = alignof(LF_Token), .elem_qtt_in_block = 8 };
+  LF_List tokens = {.elem_size = sizeof(LF_Token),
+                    .elem_alignment = alignof(LF_Token),
+                    .elem_qtt_in_block = 8};
   lf_init_list(&tokens);
-  LF_String lexemes = { .char_qtt_in_block = 64 };
+  LF_String lexemes = {.char_qtt_in_block = 64};
   lf_init_string(&lexemes);
 
   lf_lex(&tokens, &lexemes, source, 15);
@@ -92,31 +116,38 @@ static MunitResult test_lex_big_lexemes(const MunitParameter params[], void *dat
   LF_Token *fst_token = (LF_Token *)lf_get_first_list_elem(&tokens);
   munit_assert_int(fst_token->type, ==, LF_TOKEN_EQUAL);
 
-  LF_Token *snd_token = (LF_Token *)lf_get_next_list_elem(&tokens, (char *)fst_token);
+  LF_Token *snd_token =
+    (LF_Token *)lf_get_next_list_elem(&tokens, (char *)fst_token);
   munit_assert_int(snd_token->type, ==, LF_TOKEN_IDENTIFIER);
   munit_assert_string_equal(snd_token->lexeme, "=identifier");
 
-  LF_Token *thd_token = (LF_Token *)lf_get_next_list_elem(&tokens, (char *)snd_token);
+  LF_Token *thd_token =
+    (LF_Token *)lf_get_next_list_elem(&tokens, (char *)snd_token);
   munit_assert_int(thd_token->type, ==, LF_TOKEN_EOF);
 
   return MUNIT_OK;
 }
 
-static MunitResult test_lex_whitespace_handling(const MunitParameter params[], void *data) {
+static MunitResult test_lex_whitespace_handling(const MunitParameter params[],
+                                                void *data) {
   (void)params;
   (void)data;
 
   char *source = "  use  \n\t entry  ";
-  LF_List tokens = { .elem_size = sizeof(LF_Token), .elem_alignment = alignof(LF_Token), .elem_qtt_in_block = 8 };
+  LF_List tokens = {.elem_size = sizeof(LF_Token),
+                    .elem_alignment = alignof(LF_Token),
+                    .elem_qtt_in_block = 8};
   lf_init_list(&tokens);
-  LF_String lexemes = { .char_qtt_in_block = 64 };
+  LF_String lexemes = {.char_qtt_in_block = 64};
   lf_init_string(&lexemes);
 
   lf_lex(&tokens, &lexemes, source, 17);
 
   munit_assert_size(tokens.elem_count, ==, 3);
 
-  LF_TokenType expected_token_types[] = {LF_TOKEN_USE, LF_TOKEN_ENTRY, LF_TOKEN_EOF};
+  LF_TokenType expected_token_types[] = {LF_TOKEN_USE,
+                                         LF_TOKEN_ENTRY,
+                                         LF_TOKEN_EOF};
   LF_Token *cur_token = (LF_Token *)lf_get_first_list_elem(&tokens);
   for (int i = 0; i < 3; ++i) {
     munit_assert_int(cur_token->type, ==, expected_token_types[i]);
@@ -126,14 +157,17 @@ static MunitResult test_lex_whitespace_handling(const MunitParameter params[], v
   return MUNIT_OK;
 }
 
-static MunitResult test_lex_mixed_tokens(const MunitParameter params[], void *data) {
+static MunitResult test_lex_mixed_tokens(const MunitParameter params[],
+                                         void *data) {
   (void)params;
   (void)data;
 
   char *source = "func hello-world: () Str = {\n  \"hello world!\"\n}";
-  LF_List tokens = { .elem_size = sizeof(LF_Token), .elem_alignment = alignof(LF_Token), .elem_qtt_in_block = 8 };
+  LF_List tokens = {.elem_size = sizeof(LF_Token),
+                    .elem_alignment = alignof(LF_Token),
+                    .elem_qtt_in_block = 8};
   lf_init_list(&tokens);
-  LF_String lexemes = { .char_qtt_in_block = 64 };
+  LF_String lexemes = {.char_qtt_in_block = 64};
   lf_init_string(&lexemes);
 
   lf_lex(&tokens, &lexemes, source, 47);
@@ -211,8 +245,7 @@ static MunitTest lexical_analysis_tests[] = {
     .options = MUNIT_TEST_OPTION_NONE,
     .parameters = NULL,
   },
-  {0}
-};
+  {0}};
 
 static const MunitSuite lexical_analysis_test_suite = {
   .prefix = "/lexical_analysis",

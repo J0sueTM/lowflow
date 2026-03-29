@@ -30,7 +30,8 @@ void lf_partition_flows(LF_PassPipeline *pipeline) {
 
   switch (pipeline->flow_partition_strategy) {
     case LF_FLOW_PARTITION_STRATEGY_NONE:
-      parent_flow->val_schedule.elem_qtt_in_block = pipeline->val_schedule.elem_qtt_in_block;
+      parent_flow->val_schedule.elem_qtt_in_block =
+        pipeline->val_schedule.elem_qtt_in_block;
       break;
     default:
       assert(false && "not implemented!");

@@ -2,13 +2,13 @@
 
 static bool _lf_is_whitespace(char c) {
   switch (c) {
-  case ' ':
-  case '\n':
-  case '\r':
-  case '\t':
-    return true;
-  default:
-    return false;
+    case ' ':
+    case '\n':
+    case '\r':
+    case '\t':
+      return true;
+    default:
+      return false;
   }
 }
 
@@ -18,41 +18,44 @@ static bool _lf_is_whitespace(char c) {
 // they have soft boundaries.
 static LF_TokenType _lf_get_token_type_from_hard_boundary_lexeme(char c) {
   switch (c) {
-  case '/':
-    return LF_TOKEN_SLASH;
-    break;
-  case '(':
-    return LF_TOKEN_PAREN_BEG;
-    break;
-  case ')':
-    return LF_TOKEN_PAREN_END;
-    break;
-  case '{':
-    return LF_TOKEN_BRACE_BEG;
-    break;
-  case '}':
-    return LF_TOKEN_BRACE_END;
-    break;
-  case ':':
-    return LF_TOKEN_COLON;
-    break;
-  default:
-    return LF_TOKEN_UNKNOWN;
-    break;
+    case '/':
+      return LF_TOKEN_SLASH;
+      break;
+    case '(':
+      return LF_TOKEN_PAREN_BEG;
+      break;
+    case ')':
+      return LF_TOKEN_PAREN_END;
+      break;
+    case '{':
+      return LF_TOKEN_BRACE_BEG;
+      break;
+    case '}':
+      return LF_TOKEN_BRACE_END;
+      break;
+    case ':':
+      return LF_TOKEN_COLON;
+      break;
+    case ',':
+      return LF_TOKEN_COMMA;
+      break;
+    default:
+      return LF_TOKEN_UNKNOWN;
+      break;
   }
 }
 
 static LF_TokenType _lf_get_token_type_from_soft_boundary_lexeme(char c) {
   switch (c) {
-  case '=':
-    return LF_TOKEN_EQUAL;
-    break;
-  case '!':
-    return LF_TOKEN_BANG;
-    break;
-  default:
-    return LF_TOKEN_UNKNOWN;
-    break;
+    case '=':
+      return LF_TOKEN_EQUAL;
+      break;
+    case '!':
+      return LF_TOKEN_BANG;
+      break;
+    default:
+      return LF_TOKEN_UNKNOWN;
+      break;
   }
 }
 
@@ -68,21 +71,28 @@ static LF_TokenType _lf_get_token_type_from_big_lexeme(LF_String *lexeme) {
   return LF_TOKEN_IDENTIFIER;
 }
 
-static void _lf_copy_lexeme_to_token(LF_Token *dest_token, LF_String *lexemes, LF_String *src_lexeme, size_t src_pos) {
+static void _lf_copy_lexeme_to_token(LF_Token *dest_token,
+                                     LF_String *lexemes,
+                                     LF_String *src_lexeme,
+                                     size_t src_pos) {
   char *lexeme_buf = lf_alloc_string(lexemes, src_lexeme->str_qtt + 1);
   memcpy(lexeme_buf, lf_string_to_cstr(src_lexeme), src_lexeme->str_qtt);
   lexeme_buf[src_lexeme->str_qtt] = '\0';
   dest_token->lexeme = lexeme_buf;
 }
 
-static void _lf_flush_lexeme(LF_List *tokens, LF_String *lexemes, LF_String *cur_lexeme, size_t src_pos) {
+static void _lf_flush_lexeme(LF_List *tokens,
+                             LF_String *lexemes,
+                             LF_String *cur_lexeme,
+                             size_t src_pos) {
   LF_Token *token = (LF_Token *)lf_alloc_list_elem(tokens);
   token->start_pos = src_pos - cur_lexeme->str_qtt;
   token->end_pos = src_pos;
 
   if (cur_lexeme->str_qtt <= 1) {
     char lexeme_char = *lf_string_to_cstr(cur_lexeme);
-    LF_TokenType token_type = _lf_get_token_type_from_soft_boundary_lexeme(lexeme_char);
+    LF_TokenType token_type =
+      _lf_get_token_type_from_soft_boundary_lexeme(lexeme_char);
     if (token_type == LF_TOKEN_UNKNOWN) {
       token_type = _lf_get_token_type_from_hard_boundary_lexeme(lexeme_char);
     }
@@ -107,7 +117,7 @@ void lf_lex(LF_List *tokens, LF_String *lexemes, char *source, size_t size) {
   assert(source);
   assert(lexemes);
 
-  LF_String cur_lexeme = { .char_qtt_in_block = 255 };
+  LF_String cur_lexeme = {.char_qtt_in_block = 255};
   lf_init_string(&cur_lexeme);
 
   bool is_reading_str = false;
@@ -140,7 +150,8 @@ void lf_lex(LF_List *tokens, LF_String *lexemes, char *source, size_t size) {
       continue;
     }
 
-    LF_TokenType cur_token_type = _lf_get_token_type_from_hard_boundary_lexeme(*cur_char);
+    LF_TokenType cur_token_type =
+      _lf_get_token_type_from_hard_boundary_lexeme(*cur_char);
     bool is_hard_boundary_token = cur_token_type != LF_TOKEN_UNKNOWN;
     if (is_hard_boundary_token) {
       if (has_lexeme) {

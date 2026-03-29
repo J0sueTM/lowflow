@@ -6,7 +6,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "./memory/list.h"
 #include "./memory/stack.h"
+#include "./memory/string.h"
 
 typedef enum LF_Type {
   LF_INT = 1 << 0,
@@ -29,6 +31,14 @@ typedef enum LF_Type {
    LF_TRAIT)
 
 typedef struct LF_Value LF_Value;
+
+// typedef struct LF_Type {
+//   union {
+//     LF_PrimitiveType primitive_type;
+//     LF_String identifier;
+//     LF_Value *complex_type;
+//   };
+// } LF_Type;
 
 typedef struct LF_ListSpec {
   LF_Type elem_type;

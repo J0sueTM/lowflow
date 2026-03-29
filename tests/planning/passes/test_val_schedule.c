@@ -41,11 +41,11 @@ static MunitResult test_build_val_schedule__success(
   LF_Value *plus_fn_call_args[] = {&int_4, &int_2};
   LF_Value plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = { .func_def = &plus_fn },
+    .func_call_spec = {.func_def = &plus_fn},
     .inner_vals = plus_fn_call_args,
   };
 
-  LF_PassPipeline pipeline = { .entrypoint = &plus_fn_call };
+  LF_PassPipeline pipeline = {.entrypoint = &plus_fn_call};
   lf_init_pass_pipeline(&pipeline);
 
   lf_build_val_schedule(&pipeline);

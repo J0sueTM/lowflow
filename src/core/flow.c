@@ -8,7 +8,8 @@ void lf_init_flow(LF_Flow *flow) {
   flow->logger.time_fmt = NULL;
   lf_init_logger(&flow->logger);
 
-  // flow->val_schedule.elem_qtt_in_block needs to be defined before flow initialization.
+  // flow->val_schedule.elem_qtt_in_block needs to be defined before flow
+  // initialization.
   flow->val_schedule.elem_size = sizeof(LF_Value *);
   flow->val_schedule.elem_alignment = alignof(LF_Value *);
 

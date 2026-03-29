@@ -76,7 +76,7 @@ char *lf_get_stack_elem_by_content(LF_Stack *stack, char *content) {
                                       stack->elem_padded_size);
 }
 
-void lf_debug_stack(LF_Stack *stack, void(*debug_fn)(char *data)) {
+void lf_debug_stack(LF_Stack *stack, void (*debug_fn)(char *data)) {
   assert(stack);
 
   LF_MemBlock *cur_block = stack->arena.head_block;
@@ -88,11 +88,9 @@ void lf_debug_stack(LF_Stack *stack, void(*debug_fn)(char *data)) {
       continue;
     }
 
-    for (
-      size_t i = cur_block->left_offset;
-      i <= cur_block->right_offset - stack->elem_padded_size;
-      i += stack->elem_padded_size
-    ) {
+    for (size_t i = cur_block->left_offset;
+         i <= cur_block->right_offset - stack->elem_padded_size;
+         i += stack->elem_padded_size) {
       debug_fn(cur_block->data + i);
     }
     printf("\n");

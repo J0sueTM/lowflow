@@ -16,15 +16,17 @@ static MunitResult test_init_list(const MunitParameter params[], void *data) {
   return MUNIT_OK;
 }
 
-static MunitTest list_tests[] = {{
-                                   .name = "/init",
-                                   .test = test_init_list,
-                                   .setup = NULL,
-                                   .tear_down = NULL,
-                                   .options = MUNIT_TEST_OPTION_NONE,
-                                   .parameters = NULL,
-                                 },
-                                 {0}};
+static MunitTest list_tests[] = {
+  {
+    .name = "/init",
+    .test = test_init_list,
+    .setup = NULL,
+    .tear_down = NULL,
+    .options = MUNIT_TEST_OPTION_NONE,
+    .parameters = NULL,
+  },
+  {0},
+};
 
 static const MunitSuite list_test_suite = {
   .prefix = "/list",

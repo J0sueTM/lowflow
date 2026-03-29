@@ -1,0 +1,10 @@
+EXPR = STR
+
+arg = IDENTIFIER, COLON, IDENTIFIER
+args = arg, { COMMA arg }
+
+func = FUNC, IDENTIFIER, COLON
+     , PAREN_BEG, [ args ], PAREN_END,
+     , IDENTIFIER, EQUAL, EXPR
+
+module = { func }

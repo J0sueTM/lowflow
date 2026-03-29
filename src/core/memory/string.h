@@ -1,11 +1,13 @@
 #ifndef LF_STRING_H
 #define LF_STRING_H
 
-#include "arena.h"
+#include "./adapters.h"
+#include "./arena.h"
 
 // TODO: Maybe make so strings can be broken between blocks.
 typedef struct LF_String {
-  LF_Arena arena;
+  LF_Arena *arena;
+  LF_ArenaSlice *slice;
   size_t char_qtt_in_block;
   size_t str_qtt;
 } LF_String;

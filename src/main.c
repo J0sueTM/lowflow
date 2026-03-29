@@ -1,9 +1,9 @@
 #include <stdalign.h>
 
 #include "./core/memory/stack.h"
+#include "./core/passes.h"
 #include "./core/types.h"
 #include "./planning/passes/flow_partition.h"
-#include "./core/passes.h"
 #include "./planning/passes/val_schedule.h"
 
 // TODO: return error.
@@ -46,7 +46,7 @@ int main(void) {
   LF_Value *left_plus_fn_call_args[] = {&int_4, &int_5};
   LF_Value left_plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = { .func_def = &plus_fn },
+    .func_call_spec = {.func_def = &plus_fn},
     .inner_vals = left_plus_fn_call_args,
   };
 
@@ -55,7 +55,7 @@ int main(void) {
   LF_Value *middle_plus_fn_call_args[] = {&left_plus_fn_call, &int_7};
   LF_Value middle_plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = { .func_def = &plus_fn },
+    .func_call_spec = {.func_def = &plus_fn},
     .inner_vals = middle_plus_fn_call_args,
   };
 
@@ -65,7 +65,7 @@ int main(void) {
   };
   LF_Value parent_plus_fn_call = {
     .type = LF_FUNC_CALL,
-    .func_call_spec = { .func_def = &plus_fn },
+    .func_call_spec = {.func_def = &plus_fn},
     .inner_vals = parent_plus_fn_call_args,
   };
 
@@ -83,8 +83,9 @@ int main(void) {
 
   // lf_eval_flow(pipeline.parent_flow);
 
-  // LF_Value *res_val = *(LF_Value **)lf_pop_from_stack(&pipeline.parent_flow->frame_vals);
-  // printf("res_val = %d\n", res_val->as_int);
+  // LF_Value *res_val = *(LF_Value
+  // **)lf_pop_from_stack(&pipeline.parent_flow->frame_vals); printf("res_val =
+  // %d\n", res_val->as_int);
 
   return 0;
 }
