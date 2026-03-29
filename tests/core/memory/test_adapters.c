@@ -101,14 +101,13 @@ static MunitResult test_init_arena_slice__success(const MunitParameter params[],
   lf_arena_alloc_at_tail(&arena, float_padded_size * 2);
   lf_arena_alloc_at_tail(&arena, float_padded_size * 2);
   // [x,x] -> [x,x] -> [x,x]
-  //  3 2      1 1      2 3
 
   LF_ArenaSlice slice;
   slice.elem_size = float_padded_size;
-  lf_init_arena_slice(&arena, &slice);
+  lf_init_arena_slice(&slice, &arena);
 
-  munit_assert_size(slice.left_offset, ==, 3);
-  munit_assert_size(slice.right_offset, ==, 3);
+  munit_assert_size(slice.head_offset, ==, arena.head_block->left_offset);
+  munit_assert_size(slice.tail_offset, ==, arena.tail_block->right_offset);
 
   lf_dealloc_arena(&arena);
 
@@ -123,21 +122,24 @@ static MunitResult test_arena_slice_alloc_at_head__success(
   size_t float_padded_size = sizeof(float) + alignof(float);
 
   LF_Arena arena;
-  arena.block_offset = LF_MEMBLOCK_OFFSET_LEFT;
+  arena.block_offset = LF_MEMBLOCK_OFFSET_MIDDLE;
   arena.block_size = float_padded_size * 2;
   lf_init_arena(&arena);
 
   LF_ArenaSlice slice;
   slice.elem_size = float_padded_size;
-  lf_init_arena_slice(&arena, &slice);
+  lf_init_arena_slice(&slice, &arena);
 
   char *ptr = lf_arena_slice_alloc_at_head(&slice, &arena, float_padded_size);
-
   munit_assert_not_null(ptr);
-  munit_assert_size(slice.left_offset, ==, 1);
+  munit_assert_ptr_equal(slice.head_block, arena.head_block);
+  munit_assert_size(slice.head_offset, ==, arena.head_block->left_offset);
 
+  // Will create a new memblock.
   ptr = lf_arena_slice_alloc_at_head(&slice, &arena, float_padded_size);
-  munit_assert_size(slice.left_offset, ==, 2);
+  munit_assert_not_null(ptr);
+  munit_assert_ptr_equal(slice.head_block, arena.head_block);
+  munit_assert_size(slice.head_offset, ==, arena.head_block->left_offset);
 
   lf_dealloc_arena(&arena);
 
@@ -152,17 +154,24 @@ static MunitResult test_arena_slice_alloc_at_tail__success(
   size_t float_padded_size = sizeof(float) + alignof(float);
 
   LF_Arena arena;
+  arena.block_offset = LF_MEMBLOCK_OFFSET_MIDDLE;
   arena.block_size = float_padded_size * 2;
   lf_init_arena(&arena);
 
   LF_ArenaSlice slice;
   slice.elem_size = float_padded_size;
-  lf_init_arena_slice(&arena, &slice);
+  lf_init_arena_slice(&slice, &arena);
 
   char *ptr = lf_arena_slice_alloc_at_tail(&slice, &arena, float_padded_size);
-
   munit_assert_not_null(ptr);
-  munit_assert_size(slice.right_offset, >, 0);
+  munit_assert_ptr_equal(slice.tail_block, arena.tail_block);
+  munit_assert_size(slice.tail_offset, ==, arena.tail_block->right_offset);
+
+  // Will create a new memblock.
+  ptr = lf_arena_slice_alloc_at_tail(&slice, &arena, float_padded_size);
+  munit_assert_not_null(ptr);
+  munit_assert_ptr_equal(slice.tail_block, arena.tail_block);
+  munit_assert_size(slice.tail_offset, ==, arena.tail_block->right_offset);
 
   lf_dealloc_arena(&arena);
 
@@ -177,17 +186,18 @@ static MunitResult test_arena_slice_alloc__both_sides(
   size_t float_padded_size = sizeof(float) + alignof(float);
 
   LF_Arena arena;
-  arena.block_size = float_padded_size * 4;
+  arena.block_offset = LF_MEMBLOCK_OFFSET_LEFT;
+  arena.block_size = float_padded_size * 2;
   lf_init_arena(&arena);
 
   LF_ArenaSlice slice;
   slice.elem_size = float_padded_size;
-  lf_init_arena_slice(&arena, &slice);
+  lf_init_arena_slice(&slice, &arena);
 
   char *head_ptr =
-    lf_arena_slice_alloc_at_head(&slice, &arena, float_padded_size);
+    lf_arena_slice_alloc_at_head(&slice, &arena, float_padded_size * 2);
   char *tail_ptr =
-    lf_arena_slice_alloc_at_tail(&slice, &arena, float_padded_size);
+    lf_arena_slice_alloc_at_tail(&slice, &arena, float_padded_size * 2);
 
   munit_assert_not_null(head_ptr);
   munit_assert_not_null(tail_ptr);
@@ -212,29 +222,27 @@ static MunitResult test_arena_slice__ownership(const MunitParameter params[],
 
   LF_ArenaSlice slice;
   slice.elem_size = float_padded_size;
-  lf_init_arena_slice(&arena, &slice);
+  lf_init_arena_slice(&slice, &arena);
 
   // Inits owning the whole arena.
   char *head_ptr =
     lf_arena_slice_alloc_at_head(&slice, &arena, float_padded_size);
   // [x,_]
-  //  1 1
   char *tail_ptr =
     lf_arena_slice_alloc_at_tail(&slice, &arena, float_padded_size);
   // [x,x]
-  //  1 1
   munit_assert_ptr_not_null(head_ptr);
   munit_assert_ptr_not_null(tail_ptr);
 
   // Loses head.
   lf_arena_alloc_at_head(&arena, float_padded_size);
   // [_,y] -> [x,x]
-  //  2 1      1 2
   head_ptr = lf_arena_slice_alloc_at_head(&slice, &arena, float_padded_size);
   munit_assert_ptr_null(head_ptr);
 
   // Loses tail.
   lf_arena_alloc_at_tail(&arena, float_padded_size);
+  // [_,y] -> [x,x] - [y,_]
   tail_ptr = lf_arena_slice_alloc_at_tail(&slice, &arena, float_padded_size);
   munit_assert_ptr_null(head_ptr);
 
@@ -259,26 +267,22 @@ static MunitResult test_arena_slice__multiple(const MunitParameter params[],
   fst_slice.elem_size = float_padded_size;
 
   // Slice 1 inits owning the whole arena.
-  lf_init_arena_slice(&arena, &fst_slice);
-  // [ ]
-  //  0
+  lf_init_arena_slice(&fst_slice, &arena);
+  // []
   lf_arena_slice_alloc_at_tail(&fst_slice, &arena, float_padded_size * 2);
   // [1,1]
-  //  1 1
   lf_arena_slice_alloc_at_tail(&fst_slice, &arena, float_padded_size * 2);
   // [1,1] -> [1,1]
-  //  2 1      1 2
   lf_arena_slice_alloc_at_tail(&fst_slice, &arena, float_padded_size * 2);
   // [1,1] -> [1,1] -> [1,1]
-  //  3 2      1 1      2 3
 
-  LF_ArenaSlice snd_slice;
-  snd_slice.elem_size = float_padded_size;
   // Slice 2 inits owning the second block.
-  bool ok = lf_init_arena_slice_with_relative_offsets(&arena, &snd_slice, 1, 1);
-  munit_assert_int(ok, !=, 0);
+  LF_ArenaSlice snd_slice = {
+    .head_block = arena.head_block->next,
+    .tail_block = arena.head_block->next,
+    .elem_size = float_padded_size,
+  };
   // [1,1] -> [(1 2),(1 2)] -> [1,1]
-  //  3 2        1     1        2 3
 
   // Since it isn't in the borders, it can't grow.
   char *head_ptr =
@@ -290,18 +294,18 @@ static MunitResult test_arena_slice__multiple(const MunitParameter params[],
 
   // Slice 1, however, can grow, since it's still on the borders.
   tail_ptr =
-    lf_arena_slice_alloc_at_tail(&fst_slice, &arena, 2 * float_padded_size);
+    lf_arena_slice_alloc_at_tail(&fst_slice, &arena, float_padded_size * 2);
   // [1, 1] -> [(1 2),(1 2)] -> [1,1] -> [1,1]
-  //  4  3        2     1        1 2      3 4
   munit_assert_ptr_not_null(tail_ptr);
 
-  LF_ArenaSlice thd_slice;
-  thd_slice.elem_size = float_padded_size;
   // Slice 3 inits owning the last (fourth) block.
-  ok = lf_init_arena_slice_with_relative_offsets(&arena, &thd_slice, -3, 4);
-  munit_assert_int(ok, !=, 0);
+  LF_ArenaSlice thd_slice = {
+    .head_block = arena.tail_block,
+    .tail_block = arena.tail_block,
+    .head_offset = arena.tail_block->left_offset,
+    .tail_offset = arena.tail_block->right_offset,
+  };
   // [1,1] -> [(1 2),(1 2)] -> [1,1] -> [(1 3),(1 3)]
-  //  4 3        2     1        1 2        3     4
   tail_ptr =
     lf_arena_slice_alloc_at_tail(&thd_slice, &arena, float_padded_size);
   munit_assert_ptr_not_null(tail_ptr);

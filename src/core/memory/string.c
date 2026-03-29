@@ -6,7 +6,7 @@ void lf_init_string(LF_String *str) {
   assert(str->arena);
 
   if (str->slice) {
-    lf_init_arena_slice(str->arena, str->slice);
+    lf_init_arena_slice(str->slice, str->arena);
     return;
   }
 
