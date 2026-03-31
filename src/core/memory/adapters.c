@@ -81,14 +81,40 @@ void lf_stack_to_list(LF_Stack *stack, LF_List *list) {
   list->arena.tail_block = last_list_block;
 }
 
+void _lf_get_arena_slice_size(LF_ArenaSlice *slice) {
+  assert(slice);
+
+  if (slice->head_block == slice->tail_block) {
+    slice->size = slice->tail_offset - slice->head_offset;
+    return;
+  }
+
+  size_t head_block_owned_size = slice->head_block->size - slice->head_offset;
+  size_t tail_block_owned_size = slice->tail_offset;
+  size_t size = head_block_owned_size + tail_block_owned_size;
+  LF_MemBlock *cur_block = slice->head_block->next;
+  while (cur_block && cur_block != slice->tail_block) {
+    size_t used_size = cur_block->right_offset - cur_block->left_offset;
+    size += used_size;
+    cur_block = cur_block->next;
+  }
+
+  slice->size = size;
+}
+
 void lf_init_arena_slice(LF_ArenaSlice *dest, LF_Arena *src) {
   assert(dest);
-  assert(src);
 
-  dest->head_block = src->head_block;
-  dest->tail_block = src->tail_block;
-  dest->head_offset = src->head_block->left_offset;
-  dest->tail_offset = src->tail_block->right_offset;
+  if (src) {
+    dest->head_block = src->head_block;
+    dest->tail_block = src->tail_block;
+    dest->head_offset = src->head_block->left_offset;
+    dest->tail_offset = src->tail_block->right_offset;
+  }
+  assert(dest->head_block);
+  assert(dest->tail_block);
+
+  _lf_get_arena_slice_size(dest);
 }
 
 char *lf_arena_slice_alloc_at_head(LF_ArenaSlice *slice,
@@ -111,6 +137,8 @@ char *lf_arena_slice_alloc_at_head(LF_ArenaSlice *slice,
   assert(ptr);
   slice->head_block = arena->head_block;
   slice->head_offset = arena->head_block->left_offset;
+
+  slice->size += size;
 
   return ptr;
 }
@@ -136,5 +164,37 @@ char *lf_arena_slice_alloc_at_tail(LF_ArenaSlice *slice,
   slice->tail_block = arena->tail_block;
   slice->tail_offset = arena->tail_block->right_offset;
 
+  slice->size += size;
+
   return ptr;
+}
+
+bool lf_grow_arena_slice_tail(LF_ArenaSlice *slice, LF_Arena *arena, size_t size) {
+  assert(slice);
+  assert(arena);
+
+  size_t tail_remainder = slice->tail_block->size - slice->tail_offset;
+  if (size <= tail_remainder) {
+    slice->tail_offset += size;
+    slice->size += size;
+    return true;
+  }
+
+  size_t total_remainder = size - tail_remainder;
+  LF_MemBlock *cur_block = slice->tail_block->next;
+  while (cur_block) {
+    if (size <= total_remainder) {
+      slice->tail_block = cur_block;
+      slice->tail_offset = total_remainder;
+      slice->size += size;
+
+      return true;
+    }
+
+    slice->size += cur_block->size;
+    total_remainder -= cur_block->size;
+    cur_block = cur_block->next;
+  }
+
+  assert(false && "reached end of arena while growing slice");
 }

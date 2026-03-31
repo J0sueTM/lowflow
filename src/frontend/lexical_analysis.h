@@ -35,11 +35,9 @@ typedef enum LF_TokenType {
 
 typedef struct LF_Token {
   LF_TokenType type;
-  char *lexeme;
-  size_t start_pos;
-  size_t end_pos;
+  LF_String *lexeme;
 } LF_Token;
 
-void lf_lex(LF_List *tokens, LF_String *lexemes, char *source, size_t size);
+void lf_lex(LF_List *tokens, LF_List *lexemes, LF_List *lexeme_slices, LF_String *source);
 
 #endif // LF_FRONTEND_LEXICAL_ANALYSIS

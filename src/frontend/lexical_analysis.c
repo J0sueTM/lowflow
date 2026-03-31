@@ -59,127 +59,156 @@ static LF_TokenType _lf_get_token_type_from_soft_boundary_lexeme(char c) {
   }
 }
 
-static LF_TokenType _lf_get_token_type_from_big_lexeme(LF_String *lexeme) {
-  char *char_str = lf_string_to_cstr(lexeme);
-  if (lexeme->str_qtt == 3 && memcmp(char_str, "use", 3) == 0) {
+static LF_TokenType _lf_get_token_type_from_big_lexeme(LF_String *str) {
+  assert(str);
+
+  LF_StringComparison comp = {
+    .type = LF_STR_COMPARISON_STR_CHAR,
+    .left = str
+  };
+
+  comp.right_char = "use";
+  comp.right_char_size = 3;
+  if (lf_compare_string(&comp)) {
     return LF_TOKEN_USE;
-  } else if (lexeme->str_qtt == 5 && memcmp(char_str, "entry", 5) == 0) {
+  }
+
+  comp.right_char = "entry";
+  comp.right_char_size = 5;
+  if (lf_compare_string(&comp)) {
     return LF_TOKEN_ENTRY;
-  } else if (lexeme->str_qtt == 4 && memcmp(char_str, "func", 4) == 0) {
+  }
+
+  comp.right_char = "func";
+  comp.right_char_size = 4;
+  if (lf_compare_string(&comp)) {
     return LF_TOKEN_FUNC;
   }
+
   return LF_TOKEN_IDENTIFIER;
 }
 
-static void _lf_copy_lexeme_to_token(LF_Token *dest_token,
-                                     LF_String *lexemes,
-                                     LF_String *src_lexeme,
-                                     size_t src_pos) {
-  char *lexeme_buf = lf_alloc_string(lexemes, src_lexeme->str_qtt + 1);
-  memcpy(lexeme_buf, lf_string_to_cstr(src_lexeme), src_lexeme->str_qtt);
-  lexeme_buf[src_lexeme->str_qtt] = '\0';
-  dest_token->lexeme = lexeme_buf;
-}
+static void _lf_flush_lexeme(LF_List *tokens, LF_String *lexeme) {
+  assert(tokens);
+  assert(lexeme);
 
-static void _lf_flush_lexeme(LF_List *tokens,
-                             LF_String *lexemes,
-                             LF_String *cur_lexeme,
-                             size_t src_pos) {
   LF_Token *token = (LF_Token *)lf_alloc_list_elem(tokens);
-  token->start_pos = src_pos - cur_lexeme->str_qtt;
-  token->end_pos = src_pos;
-
-  if (cur_lexeme->str_qtt <= 1) {
-    char lexeme_char = *lf_string_to_cstr(cur_lexeme);
-    LF_TokenType token_type =
-      _lf_get_token_type_from_soft_boundary_lexeme(lexeme_char);
+  if (lf_get_string_size(lexeme) <= 1) {
+    LF_StringIteration lexeme_iter = {.str = lexeme};
+    char *fst_char = lf_init_string_iteration(&lexeme_iter);
+    LF_TokenType token_type = _lf_get_token_type_from_soft_boundary_lexeme(*fst_char);
     if (token_type == LF_TOKEN_UNKNOWN) {
-      token_type = _lf_get_token_type_from_hard_boundary_lexeme(lexeme_char);
+      token_type = _lf_get_token_type_from_hard_boundary_lexeme(*fst_char);
     }
     token->type = token_type;
     token->lexeme = NULL;
   } else {
-    token->type = _lf_get_token_type_from_big_lexeme(cur_lexeme);
+    token->type = _lf_get_token_type_from_big_lexeme(lexeme);
     if (token->type == LF_TOKEN_IDENTIFIER) {
-      _lf_copy_lexeme_to_token(token, lexemes, cur_lexeme, src_pos);
+      token->lexeme = lexeme;
     }
   }
-
-  lf_reset_string(cur_lexeme);
 }
 
-static void _lf_push_lexeme_char(LF_String *lexeme, char *c) {
-  char *buf = lf_alloc_string(lexeme, 1);
-  buf[0] = *c;
-}
-
-void lf_lex(LF_List *tokens, LF_String *lexemes, char *source, size_t size) {
-  assert(source);
+void lf_lex(LF_List *tokens, LF_List *lexemes, LF_List *lexeme_slices, LF_String *src) {
+  assert(tokens);
   assert(lexemes);
+  assert(lexeme_slices);
+  assert(src);
 
-  LF_String cur_lexeme = {.char_qtt_in_block = 255};
-  lf_init_string(&cur_lexeme);
-
+  LF_String *cur_lexeme = NULL;
   bool is_reading_str = false;
-  for (size_t src_pos = 0; src_pos < size; ++src_pos) {
-    char *cur_char = (source + src_pos);
 
+  LF_StringIteration src_iter = { .str = src };
+  char *cur_char = lf_init_string_iteration(&src_iter);
+  while (cur_char) {
     if (*cur_char == '"' && !is_reading_str) {
+      LF_ArenaSlice *str_lexeme_slice = (LF_ArenaSlice *)lf_alloc_list_elem(lexeme_slices);
+      str_lexeme_slice->head_block = src_iter.cur_block;
+      str_lexeme_slice->tail_block = src_iter.cur_block;
+      str_lexeme_slice->head_offset = src_iter.block_offset + sizeof(char);
+      str_lexeme_slice->tail_offset = src_iter.block_offset + (sizeof(char) * 2);
+      str_lexeme_slice->elem_size = sizeof(char);
+
+      cur_lexeme = (LF_String *)lf_alloc_list_elem(lexemes);
+      cur_lexeme->arena = src->arena;
+      lf_init_string_from_slice(cur_lexeme, str_lexeme_slice);
+
       is_reading_str = true;
       continue;
     } else if (*cur_char == '"' && is_reading_str) {
       LF_Token *str_token = (LF_Token *)lf_alloc_list_elem(tokens);
       str_token->type = LF_TOKEN_STR;
+      str_token->lexeme = cur_lexeme;
 
-      _lf_copy_lexeme_to_token(str_token, lexemes, &cur_lexeme, src_pos);
-      lf_reset_string(&cur_lexeme);
-
+      cur_lexeme = NULL;
       is_reading_str = false;
+
+      cur_char = lf_iterate_string(&src_iter);
       continue;
     } else if (is_reading_str) {
-      _lf_push_lexeme_char(&cur_lexeme, cur_char);
+      lf_grow_arena_slice_tail(cur_lexeme->slice, cur_lexeme->arena, sizeof(char));
+
+      cur_char = lf_iterate_string(&src_iter);
       continue;
     }
 
-    bool has_lexeme = cur_lexeme.str_qtt >= 1;
+    bool has_old_lexeme = cur_lexeme != NULL;
     bool is_whitespace = _lf_is_whitespace(*cur_char);
-    if (is_whitespace && has_lexeme) {
-      _lf_flush_lexeme(tokens, lexemes, &cur_lexeme, src_pos);
+    if (is_whitespace && has_old_lexeme) {
+      _lf_flush_lexeme(tokens, cur_lexeme);
+
+      cur_lexeme = NULL;
+      cur_char = lf_iterate_string(&src_iter);
       continue;
     } else if (is_whitespace) {
+      cur_char = lf_iterate_string(&src_iter);
       continue;
     }
 
-    LF_TokenType cur_token_type =
-      _lf_get_token_type_from_hard_boundary_lexeme(*cur_char);
-    bool is_hard_boundary_token = cur_token_type != LF_TOKEN_UNKNOWN;
+    LF_TokenType hard_boundary_token_type = _lf_get_token_type_from_hard_boundary_lexeme(*cur_char);
+    bool is_hard_boundary_token = hard_boundary_token_type != LF_TOKEN_UNKNOWN;
     if (is_hard_boundary_token) {
-      if (has_lexeme) {
-        _lf_flush_lexeme(tokens, lexemes, &cur_lexeme, src_pos);
+      if (has_old_lexeme) {
+        _lf_flush_lexeme(tokens, cur_lexeme);
+        cur_lexeme = NULL;
       }
 
-      LF_Token *token = (LF_Token *)lf_alloc_list_elem(tokens);
-      token->type = cur_token_type;
-      token->start_pos = src_pos;
-      token->end_pos = src_pos;
-      token->lexeme = NULL;
+      LF_Token *hard_boundary_token = (LF_Token *)lf_alloc_list_elem(tokens);
+      hard_boundary_token->type = hard_boundary_token_type;
 
+      cur_char = lf_iterate_string(&src_iter);
       continue;
     }
 
-    _lf_push_lexeme_char(&cur_lexeme, cur_char);
+    bool has_new_lexeme = !has_old_lexeme;
+    if (has_new_lexeme) {
+      LF_ArenaSlice *cur_lexeme_slice = (LF_ArenaSlice *)lf_alloc_list_elem(lexeme_slices);
+      cur_lexeme_slice->head_block = src_iter.cur_block;
+      cur_lexeme_slice->tail_block = src_iter.cur_block;
+      cur_lexeme_slice->head_offset = src_iter.block_offset;
+      cur_lexeme_slice->tail_offset = src_iter.block_offset + sizeof(char);
+      cur_lexeme_slice->elem_size = sizeof(char);
+
+      cur_lexeme = (LF_String *)lf_alloc_list_elem(lexemes);
+      cur_lexeme->arena = src->arena;
+      lf_init_string_from_slice(cur_lexeme, cur_lexeme_slice);
+    }
+
+    if (has_old_lexeme) {
+      lf_grow_arena_slice_tail(cur_lexeme->slice, cur_lexeme->arena, sizeof(char));
+    }
+
+    cur_char = lf_iterate_string(&src_iter);
   }
 
-  bool has_remaining_lexeme = cur_lexeme.str_qtt >= 1;
+  bool has_remaining_lexeme = cur_lexeme != NULL;
   if (has_remaining_lexeme) {
-    _lf_flush_lexeme(tokens, lexemes, &cur_lexeme, size);
+    _lf_flush_lexeme(tokens, cur_lexeme);
+    cur_lexeme = NULL;
   }
-
-  // TODO: Dealloc string.
 
   LF_Token *eof_token = (LF_Token *)lf_alloc_list_elem(tokens);
   eof_token->type = LF_TOKEN_EOF;
-  eof_token->start_pos = size;
-  eof_token->end_pos = size;
   eof_token->lexeme = NULL;
 }

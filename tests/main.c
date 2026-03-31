@@ -5,7 +5,7 @@
 
 static MunitSuite main_inner_suites[] = {
   core_test_suite,
-  // frontend_test_suite,
+  frontend_test_suite,
   // planning_test_suite,
   {0},
 };

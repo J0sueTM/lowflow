@@ -50,23 +50,23 @@ void lf_process_pass_pipeline(LF_PassPipeline *pipeline) {
 
   LF_Pass *cur_pass = (LF_Pass *)lf_get_first_list_elem(&pipeline->passes);
   while (cur_pass) {
-    lf_log_debug(&pipeline->logger,
-                 "process_pass_pipeline: begin pass. "
-                 "pipeline=%p "
-                 "pass=%p pass=%s",
-                 pipeline,
-                 cur_pass,
-                 lf_string_to_cstr(&cur_pass->name));
+    // lf_log_debug(&pipeline->logger,
+    //              "process_pass_pipeline: begin pass. "
+    //              "pipeline=%p "
+    //              "pass=%p pass=%s",
+    //              pipeline,
+    //              cur_pass,
+    //              lf_string_to_cstr(&cur_pass->name));
 
     cur_pass->apply_fn(pipeline);
 
-    lf_log_debug(&pipeline->logger,
-                 "process_pass_pipeline: end pass. "
-                 "pipeline=%p "
-                 "pass=%p name=%s",
-                 pipeline,
-                 cur_pass,
-                 lf_string_to_cstr(&cur_pass->name));
+    // lf_log_debug(&pipeline->logger,
+    //              "process_pass_pipeline: end pass. "
+    //              "pipeline=%p "
+    //              "pass=%p name=%s",
+    //              pipeline,
+    //              cur_pass,
+    //              lf_string_to_cstr(&cur_pass->name));
 
     cur_pass =
       (LF_Pass *)lf_get_next_list_elem(&pipeline->passes, (char *)cur_pass);

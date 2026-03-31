@@ -13,6 +13,7 @@ typedef struct LF_ArenaSlice {
   size_t head_offset;
   size_t tail_offset;
 
+  size_t size;
   size_t elem_size;
 } LF_ArenaSlice;
 
@@ -25,5 +26,7 @@ char *lf_arena_slice_alloc_at_head(LF_ArenaSlice *slice,
 char *lf_arena_slice_alloc_at_tail(LF_ArenaSlice *slice,
                                    LF_Arena *arena,
                                    size_t size);
+
+bool lf_grow_arena_slice_tail(LF_ArenaSlice *slice, LF_Arena *arena, size_t size);
 
 #endif // LF_CORE_MEMORY_ADAPTERS

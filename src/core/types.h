@@ -95,7 +95,7 @@ typedef struct LF_Value {
     int as_int;
     float as_float;
     char as_char;
-    char *as_str;
+    LF_String *as_str;
     bool as_bool;
     char *as_byte_ptr;
     void *as_void_ptr;

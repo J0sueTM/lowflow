@@ -38,6 +38,7 @@ typedef struct LF_Arena {
   LF_MemBlock *tail_block;
   size_t block_count;
   size_t block_size;
+  size_t size;
 
   LF_MemBlockOffset block_offset;
 

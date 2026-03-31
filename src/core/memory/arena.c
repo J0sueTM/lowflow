@@ -21,7 +21,6 @@ static void _lf_set_block_offset(LF_Arena *arena, LF_MemBlock *block) {
 
 void lf_init_arena(LF_Arena *arena) {
   assert(arena);
-  assert(arena->block_size);
 
   arena->block_count = 0;
   arena->head_block = NULL;
@@ -32,6 +31,7 @@ void lf_init_arena(LF_Arena *arena) {
   _lf_set_block_offset(arena, arena->head_block);
 
   arena->cursor_block = arena->head_block;
+  arena->size = 0;
 }
 
 LF_MemBlock *lf_alloc_arena_head_block(LF_Arena *arena) {
@@ -106,6 +106,9 @@ char *lf_arena_alloc_at_head(LF_Arena *arena, size_t size) {
   size_t filled_offset = head_block->left_offset - size;
   char *ptr = head_block->data + filled_offset;
   head_block->left_offset = filled_offset;
+
+  arena->size += size;
+
   return ptr;
 }
 
@@ -125,6 +128,8 @@ char *lf_arena_alloc_at_tail(LF_Arena *arena, size_t size) {
   size_t filled_offset = tail_block->right_offset + size;
   tail_block->right_offset = filled_offset;
 
+  arena->size += size;
+
   return ptr;
 }
 
@@ -143,6 +148,7 @@ void lf_dealloc_arena_block(LF_Arena *arena, LF_MemBlock *block) {
   }
 
   --arena->block_count;
+  arena->size -= block->size;
 
   free(block->data);
   free(block);
@@ -193,6 +199,8 @@ void lf_reset_arena(LF_Arena *arena) {
     _lf_set_block_offset(arena, cur_block);
     cur_block = cur_block->next;
   }
+
+  arena->size = 0;
 }
 
 void lf_dealloc_arena(LF_Arena *arena) {
