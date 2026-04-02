@@ -169,7 +169,9 @@ char *lf_arena_slice_alloc_at_tail(LF_ArenaSlice *slice,
   return ptr;
 }
 
-bool lf_grow_arena_slice_tail(LF_ArenaSlice *slice, LF_Arena *arena, size_t size) {
+bool lf_grow_arena_slice_tail(LF_ArenaSlice *slice,
+                              LF_Arena *arena,
+                              size_t size) {
   assert(slice);
   assert(arena);
 

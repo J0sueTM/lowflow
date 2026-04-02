@@ -1,9 +1,9 @@
 #ifndef LF_CORE_MEMORY_ADAPTERS
 #define LF_CORE_MEMORY_ADAPTERS
 
+#include "./arena.h"
 #include "./list.h"
 #include "./stack.h"
-#include "./arena.h"
 
 void lf_stack_to_list(LF_Stack *stack, LF_List *list);
 
@@ -27,6 +27,8 @@ char *lf_arena_slice_alloc_at_tail(LF_ArenaSlice *slice,
                                    LF_Arena *arena,
                                    size_t size);
 
-bool lf_grow_arena_slice_tail(LF_ArenaSlice *slice, LF_Arena *arena, size_t size);
+bool lf_grow_arena_slice_tail(LF_ArenaSlice *slice,
+                              LF_Arena *arena,
+                              size_t size);
 
 #endif // LF_CORE_MEMORY_ADAPTERS

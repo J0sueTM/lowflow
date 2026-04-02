@@ -38,6 +38,9 @@ typedef struct LF_Token {
   LF_String *lexeme;
 } LF_Token;
 
-void lf_lex(LF_List *tokens, LF_List *lexemes, LF_List *lexeme_slices, LF_String *source);
+void lf_lex(LF_List *tokens,
+            LF_List *lexemes,
+            LF_List *lexeme_slices,
+            LF_String *source);
 
 #endif // LF_FRONTEND_LEXICAL_ANALYSIS
