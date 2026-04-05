@@ -119,6 +119,66 @@ static MunitResult test_lex_keywords(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+static MunitResult test_lex_string(const MunitParameter params[],
+                                   void *data) {
+  (void)params;
+  (void)data;
+
+  LF_Arena src_arena = {.block_offset = LF_MEMBLOCK_OFFSET_LEFT};
+  LF_String src = {.char_qtt_in_block = 25, .arena = &src_arena};
+  lf_init_string(&src);
+  char *src_cstr = lf_alloc_string(&src, 25);
+  strncpy(src_cstr, "\"hello world\" \"bye world\"", 25);
+
+  LF_List tokens = {
+    .elem_size = sizeof(LF_Token),
+    .elem_alignment = alignof(LF_Token),
+    .elem_qtt_in_block = 3,
+  };
+  lf_init_list(&tokens);
+
+  LF_List lexemes = {
+    .elem_size = sizeof(LF_String),
+    .elem_alignment = alignof(LF_String),
+    .elem_qtt_in_block = 2,
+  };
+  lf_init_list(&lexemes);
+
+  LF_List lexeme_slices = {
+    .elem_size = sizeof(LF_ArenaSlice),
+    .elem_alignment = sizeof(LF_ArenaSlice),
+    .elem_qtt_in_block = 3,
+  };
+  lf_init_list(&lexeme_slices);
+
+  lf_lex(&tokens, &lexemes, &lexeme_slices, &src);
+
+  munit_assert_size(tokens.elem_count, ==, 3);
+
+  LF_Token *fst_token = (LF_Token *)lf_get_first_list_elem(&tokens);
+  LF_Token *snd_token = (LF_Token *)lf_get_next_list_elem(&tokens, (char *)fst_token);
+  munit_assert_size(fst_token->type, ==, LF_TOKEN_STR);
+  munit_assert_size(snd_token->type, ==, LF_TOKEN_STR);
+
+  LF_StringComparison comp = {
+    .type = LF_STR_COMPARISON_STR_CHAR,
+    .left = fst_token->lexeme,
+    .right_char = "hello world",
+    .right_char_size = 11
+  };
+  bool str_equal = lf_compare_string(&comp);
+  munit_assert_size(str_equal, !=, 0);
+
+  comp.left = snd_token->lexeme;
+  comp.right_char = "bye world";
+  comp.right_char_size = 9;
+  str_equal = lf_compare_string(&comp);
+  munit_assert_size(str_equal, !=, 0);
+
+
+  return MUNIT_OK;
+}
+
 static MunitResult test_lex_identifier(const MunitParameter params[],
                                        void *data) {
   (void)params;
@@ -348,6 +408,15 @@ static MunitTest lexical_analysis_tests[] = {
     .options = MUNIT_TEST_OPTION_NONE,
     .parameters = NULL,
   },
+  {
+    .name = "/string",
+    .test = test_lex_string,
+    .setup = NULL,
+    .tear_down = NULL,
+    .options = MUNIT_TEST_OPTION_NONE,
+    .parameters = NULL,
+  },
+
   {
     .name = "/keywords",
     .test = test_lex_keywords,
